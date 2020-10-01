@@ -1,0 +1,55 @@
+name: 'Synopsys Intelligent Security Scan'
+description: 'Initiate optimized SAST/SCA scans based on code changes and policy with filtered results converted to SARIF for display in GitHub. '
+author: 'DevSecOps Team @ Synopsys SIG'
+branding:
+  icon: 'shield'
+  color: 'purple'
+inputs:
+  ioServerHost:
+    description: 'The server Host URL for Intelligent Scan Engine'
+    required: true
+  ioServerPort:
+    description: 'The server Port for Intelligent Scan Engine'
+    required: false
+    default: "9090"
+  ioServerToken:
+    description: 'The server password for Intelligent Scan Engine'
+    required: true
+  ioManifest:
+    description: 'This file includes configuration of AST tools. eg SCA/SAST/IAST'
+    required: false
+    default: "SecurityManifest.yml"
+  workflowServerHost:
+    description: 'The server Host URL for Intelligent Scan Engine'
+    required: false
+    default: "ioServerHost"
+  workflowServerPort:
+    description: 'The server Port for Intelligent Scan Engine'
+    required: false
+    default: "9091"
+  workflowServerToken:
+    description: 'The server password for Intelligent Scan Engine'
+    required: true
+  workflowVersion:
+    description: 'The workflow jar version to retrieve for Intelligent Scan Engine'
+    required: false
+    default: 2020.09.01
+  workflowManifest:
+    description: 'This file includes details about which tools to run based on IO prescription'
+    required: false
+    default: "WorkflowTemplate.yml"
+  applicationManifest:
+    description: 'This file includes details about the kind of application being scanned'
+    required: false
+    default: "ApplicationManifest.yml"
+  additionalWorkflowArgs:
+    description: 'Additional arguments required for workflow engine arguments'
+    required: true
+  stage:
+    description: 'Additional arguments required for workflow engine arguments'
+    required: true
+    default: 'IO' # This is either IO or WORKFLOW 
+    
+runs:
+  using: 'node12'
+  main: 'index.js'

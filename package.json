@@ -1,0 +1,30 @@
+{
+  "name": "synopsys-io-action",
+  "version": "1.0.0",
+  "description": "Configure your projects to run only the necessary security scans, optimizing scan time and providing a quicker feedback on scan results.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synopsys-sig/intelligent-security-scan.git"
+  },
+  "keywords": [
+    "scan",
+    "intelligent",
+    "security",
+    "quality"
+  ],
+  "author": "partner-solutions@synopsys.com",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/synopsys-sig/intelligent-security-scan/issues"
+  },
+  "homepage": "https://github.com/synopsys-sig/intelligent-security-scan#readme",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "shelljs": "^0.8.4",
+    "fs": "0.0.1-security"
+  }
+}
