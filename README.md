@@ -81,4 +81,10 @@ jobs:
         workflowServerToken: "${{ secrets.WORKFLOW_SERVER_TOKEN}}"
         additionalWorkflowArgs: "--slack.token=${{secrets.SLACK_TOKEN}} --IS_SAST_ENABLED=${{steps.prescription.outputs.sastScan}}"
         stage: "WORKFLOW"
+
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        # Path to SARIF file relative to the root of the repository
+        sarif_file: workflowengine-results.sarif.json
 ```

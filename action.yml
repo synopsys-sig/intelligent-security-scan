@@ -1,5 +1,5 @@
 name: 'Synopsys Intelligent Security Scan'
-description: 'Initiate optimized SAST/SCA scans based on code changes and policy with filtered results converted to SARIF for display in GitHub. '
+description: 'Initiate optimized SAST/SCA scans based on code changes and policy with filtered results populated in GitHub UI.'
 author: 'DevSecOps Team @ Synopsys SIG'
 branding:
   icon: 'shield'
