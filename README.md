@@ -6,7 +6,7 @@ The Synopsys Intelligent Security Scan Action helps selectively perform SAST and
 
 ## Prerequisites
 
-Intelligent Scan server-side components – IQ and Workflow – must be setup on an instance, accessible to GitHub actions.
+Intelligent Scan server-side components – IQ and Workflow – must be setup on an instance, accessible to GitHub Actions.
 
 ## Unclogging the Pipeline  
 
