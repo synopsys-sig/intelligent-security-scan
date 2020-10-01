@@ -11,10 +11,17 @@
     "url": "git+https://github.com/synopsys-sig/intelligent-security-scan.git"
   },
   "keywords": [
+    "sast",
+    "sca",
+    "polaris",
     "scan",
     "intelligent",
     "security",
-    "quality"
+    "quality",
+    "synopsys",
+    "io",
+    "workflow",
+    "workflowengine"
   ],
   "author": "partner-solutions@synopsys.com",
   "license": "GPL-3.0-or-later",
