@@ -6,7 +6,13 @@ The Synopsys Intelligent Security Scan Action helps selectively perform SAST and
 
 ## Prerequisites
 
-Intelligent Scan server-side components – IQ and Workflow – must be setup on an instance, accessible to GitHub Actions.
+* To use this Action you **must be a licensed Polaris customer.**
+* Intelligent scan server must be deployed and accessible via GitHub Actions.
+
+| :exclamation: To get a demo and learn more about Polaris and the Intelligent Security Scan Action [click here](https://www.synopsys.com/software-integrity/polaris/demo-github.html).|
+|-----------------------------------------|
+
+## Unlcogging the Pipelines
 
 ## Unclogging the Pipeline  
 
