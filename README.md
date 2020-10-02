@@ -47,7 +47,7 @@ jobs:
 
     - name: Synopsys Intelligent Security Scan
       id: prescription
-      uses: sig-devsecops/synopsys-intelligent-scan@v1
+      uses: synopsys-sig/intelligent-security-scan@v1
       with:
         ioServerHost: "${{ secrets.IO_SERVER_HOST}}"
         ioServerToken: "${{ secrets.IO_SERVER_TOKEN}}"
@@ -76,7 +76,7 @@ jobs:
         args: '--blackduck.url="${{ secrets.BLACKDUCK_URL}}" --blackduck.api.token="${{ secrets.BLACKDUCK_API_TOKEN}}" --detect.tools="DETECTOR"'
 
     - name: Synopsys Intelligent Security Scan
-      uses: sig-devsecops/synopsys-intelligent-scan@v1
+      uses: synopsys-sig/intelligent-security-scan@v1
       with:
         ioServerHost: "${{ secrets.IO_SERVER_HOST}}"
         ioServerToken: "${{ secrets.IO_SERVER_TOKEN}}"
