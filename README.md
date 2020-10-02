@@ -59,11 +59,13 @@ jobs:
     # in order for this logic to work also make sure that POLARIS_ACCESS_TOKEN
     # is defined in settings
     - name: Static Analysis with Polaris
-        if: ${{steps.prescription.outputs.sastScan == 'true'}}
-        run: |
-            wget -q $${{ secrets.POLARIS_SERVER_URL}}/api/tools/polaris_cli-linux64.zip
-            unzip -j polaris_cli-linux64.zip -d /tmp
-            /tmp/polaris analyze -w
+      if: ${{steps.prescription.outputs.sastScan == 'true' }}
+      run: |
+          export POLARIS_SERVER_URL=${{ secrets.POLARIS_SERVER_URL}}
+          export POLARIS_ACCESS_TOKEN=${{ secrets.POLARIS_ACCESS_TOKEN}}
+          wget -q ${{ secrets.POLARIS_SERVER_URL}}/api/tools/polaris_cli-linux64.zip
+          unzip -j polaris_cli-linux64.zip -d /tmp
+          /tmp/polaris analyze -w
 
     # Please note that the ID in previous step was set to prescription
     # in order for this logic to work
@@ -79,7 +81,7 @@ jobs:
         ioServerHost: "${{ secrets.IO_SERVER_HOST}}"
         ioServerToken: "${{ secrets.IO_SERVER_TOKEN}}"
         workflowServerToken: "${{ secrets.WORKFLOW_SERVER_TOKEN}}"
-        additionalWorkflowArgs: "--slack.token=${{secrets.SLACK_TOKEN}} --IS_SAST_ENABLED=${{steps.prescription.outputs.sastScan}}"
+        additionalWorkflowArgs: "--slack.token=${{secrets.SLACK_TOKEN}} --IS_SAST_ENABLED=${{steps.prescription.outputs.sastScan}} --polaris.url=${{secrets.POLARIS_SERVER_URL}} --polaris.access.token=${{secrets.POLARIS_ACCESS_TOKEN}}"
         stage: "WORKFLOW"
 
     - name: Upload SARIF file
