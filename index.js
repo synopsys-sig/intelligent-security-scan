@@ -27,7 +27,7 @@ try {
 		shell.exec(`wget https://sigdevsecops.blob.core.windows.net/intelligence-orchestration/${workflowVersion}/prescription.sh`)
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
-		rcode = shell.exec(`./prescription.sh --IO.url=${ioServerHost}:${ioServerPort} --IO.token=${ioServerToken} --app.manifest.path=${applicationManifest} --sec.manifest.path=${ioManifest} --stage=${stage}`).code;
+		rcode = shell.exec(`./prescription.sh --IO.url=${ioServerHost}:${ioServerPort} --IO.token=${ioServerToken} --app.manifest.path=${applicationManifest} --sec.manifest.path=${ioManifest} --stage=${stage} ${additionalWorkflowArgs}`).code;
 
 		if (rcode != 0){
 			core.error(`Error: Execution failed and returncode is ${rcode}`);
