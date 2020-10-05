@@ -12,7 +12,7 @@ The Synopsys Intelligent Security Scan Action helps selectively perform SAST and
 | :exclamation: To get a demo and learn more about Polaris and the Intelligent Security Scan Action [click here](https://www.synopsys.com/software-integrity/polaris/demo-github.html).|
 |-----------------------------------------|
 
-## Unlcogging the Pipeline
+## Unclogging the Pipeline
 
 While many AppSec tools support automation through CI tool integrations, teams often find it is very easy to bring their pipelines to a halt if they insert a security scan into the middle of it.  Rather than simply initiating a full static or software composition analysis scan whenever a GitHub Action is invoked, Polaris first reviews code changes in order to calculate a ‘risk score.’ This risk score takes into account risk rules the team have defined, as well as the scope of the changes that have been made to the code. This score is then used to determine which security scans to perform, and at what depth.
 
