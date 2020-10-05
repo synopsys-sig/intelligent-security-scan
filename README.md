@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Synopsys Intelligent Security Scan Action helps selectively perform SAST and SCA scans, triggered during a variety of GitHub Platform events, such as push or pull request. The Synopsys Intelligent Security Scan Action allows your projects to run the only required type of security scans, optimizing the time taken by security testing and provide a quicker feedback on scan results.
+The Synopsys Intelligent Security Scan Action helps selectively perform SAST and SCA scans, triggered during a variety of GitHub Platform events, such as push or pull request. The Synopsys Intelligent Security Scan Action allows your projects to run the only required type of security scans, optimizing the time taken by security testing and provide quicker feedback on scan results.
 
 ## Prerequisites
 
@@ -22,7 +22,7 @@ Once this determination has been made, the prescribed tests will then execute us
 
 Another obstacle facing teams is the number of findings that can be produced by SAST and SCA analysis.  The spirit of DevOps is continuous incremental improvement, a goal that can be hard to realize when your security tools bury the team with hundreds or thousands of vulnerability reports to review.  Here too, Polaris reduces the burden on the team by filtering and prioritizing results so that teams can “avoid the noise” and focus on the more important security issues based on their risk.
 
-Filtered and prioritized results are made available directly to the developer within the GitHub user interface via Security Analysis Results Interchange Format (SARIF – static analysis results only) as well as other tracking tool they may be using.
+Filtered and prioritized results are made available directly to the developer within the GitHub user interface via Security Analysis Results Interchange Format (SARIF – static analysis results only) as well as other tracking tools they may be using.
 
 ## Example YAML config
 
