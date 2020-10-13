@@ -42,7 +42,7 @@ try {
 			shell.exec(`chmod +x prescription.sh`)
 			shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		}
-		var wffilecode = shell.exec(`./prescription.sh --stage=${stage} --workflow.template=${workflowManifest} ${additionalWorkflowArgs}`).code;
+		var wffilecode = shell.exec(`./prescription.sh --IO.url=${ioServerHost}:${ioServerPort} --IO.token=${ioServerToken} --stage=${stage} --workflow.template=${workflowManifest} ${additionalWorkflowArgs}`).code;
 		if (wffilecode == 0) {
 			console.log("Workflow file generated successfullly....Calling WorkFlow Engine")
 			shell.exec(`wget https://sigdevsecops.blob.core.windows.net/intelligence-orchestration/${workflowVersion}/WorkflowClient.jar`)
