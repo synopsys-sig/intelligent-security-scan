@@ -45,8 +45,6 @@ try {
 		var wffilecode = shell.exec(`./prescription.sh --IO.url=${ioServerHost}:${ioServerPort} --IO.token=${ioServerToken} --stage=${stage} --workflow.url=${workflowServerHost}:${workflowServerPort} --workflow.token=${workflowServerToken} --workflow.version=${workflowVersion} --workflow.template=${workflowManifest} ${additionalWorkflowArgs}`).code;
 		if (wffilecode == 0) {
 			console.log("Workflow file generated successfullly....Calling WorkFlow Engine")
-			shell.exec(`wget https://sigdevsecops.blob.core.windows.net/intelligence-orchestration/${workflowVersion}/WorkflowClient.jar`)
-			shell.exec(`chmod +x WorkflowClient.jar`)
 			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerHost}:${workflowServerPort}" --workflowengine.token="${workflowServerToken}" --app.manifest.path=${applicationManifest} --sec.manifest.path=synopsys-io-workflow.yml`).code;
 			if (wfclientcode != 0) {
 				core.error(`Error: Workflow failed and returncode is ${wfclientcode}`);
