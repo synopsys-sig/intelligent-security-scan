@@ -23,7 +23,7 @@
     "workflow",
     "workflowengine"
   ],
-  "author": "partner-solutions@synopsys.com",
+  "author": "software-integrity-support@synopsys.com",
   "license": "GPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/synopsys-sig/intelligent-security-scan/issues"
