@@ -3,11 +3,9 @@ const shell = require('shelljs');
 const fs = require('fs');
 
 try {
-	const ioServerHost = core.getInput('ioServerHost');
-	const ioServerPort = core.getInput('ioServerPort');
+	const ioServerUrl = core.getInput('ioServerUrl');
 	const ioServerToken = core.getInput('ioServerToken');
-	var workflowServerHost = core.getInput('workflowServerHost');
-	const workflowServerPort = core.getInput('workflowServerPort');
+	const workflowServerUrl = core.getInput('workflowServerUrl');
 	const workflowServerToken = core.getInput('workflowServerToken');
 	const workflowVersion = core.getInput('workflowVersion');
 	const applicationManifest = core.getInput('applicationManifest');
@@ -17,17 +15,13 @@ try {
 	const stage = core.getInput('stage')
 	var rcode = -1
 
-	if(workflowServerHost === "ioServerHost") {
-		workflowServerHost = ioServerHost
-	}
-
 	// Irrespective of Machine this should be invoked
 	if(stage.toUpperCase() === "IO") {
 		console.log("Triggering prescription")
 		shell.exec(`wget https://sigdevsecops.blob.core.windows.net/intelligence-orchestration/${workflowVersion}/prescription.sh`)
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
-		rcode = shell.exec(`./prescription.sh --IO.url=${ioServerHost}:${ioServerPort} --IO.token=${ioServerToken} --app.manifest.path=${applicationManifest} --sec.manifest.path=${ioManifest} --stage=${stage} --workflow.version=${workflowVersion} ${additionalWorkflowArgs}`).code;
+		rcode = shell.exec(`./prescription.sh --IO.url=${ioServerUrl} --IO.token=${ioServerToken} --app.manifest.path=${applicationManifest} --sec.manifest.path=${ioManifest} --stage=${stage} --workflow.version=${workflowVersion} ${additionalWorkflowArgs}`).code;
 
 		if (rcode != 0){
 			core.error(`Error: Execution failed and returncode is ${rcode}`);
@@ -42,10 +36,10 @@ try {
 			shell.exec(`chmod +x prescription.sh`)
 			shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		}
-		var wffilecode = shell.exec(`./prescription.sh --IO.url=${ioServerHost}:${ioServerPort} --IO.token=${ioServerToken} --stage=${stage} --workflow.url=${workflowServerHost}:${workflowServerPort} --workflow.token=${workflowServerToken} --workflow.version=${workflowVersion} --workflow.template=${workflowManifest} ${additionalWorkflowArgs}`).code;
+		var wffilecode = shell.exec(`./prescription.sh --IO.url=${ioServerUrl} --IO.token=${ioServerToken} --stage=${stage} --workflow.url=${workflowServerUrl} --workflow.token=${workflowServerToken} --workflow.version=${workflowVersion} --workflow.template=${workflowManifest} ${additionalWorkflowArgs}`).code;
 		if (wffilecode == 0) {
 			console.log("Workflow file generated successfullly....Calling WorkFlow Engine")
-			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerHost}:${workflowServerPort}" --workflowengine.token="${workflowServerToken}" --app.manifest.path=${applicationManifest} --sec.manifest.path=synopsys-io-workflow.yml`).code;
+			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --workflowengine.token="${workflowServerToken}" --app.manifest.path=${applicationManifest} --sec.manifest.path=synopsys-io-workflow.yml`).code;
 			if (wfclientcode != 0) {
 				core.error(`Error: Workflow failed and returncode is ${wfclientcode}`);
 				core.setFailed(error.message);

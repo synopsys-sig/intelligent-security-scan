@@ -5,13 +5,9 @@ branding:
   icon: 'shield'
   color: 'purple'
 inputs:
-  ioServerHost:
-    description: 'The server Host URL for Intelligent Scan Engine'
+  ioServerUrl:
+    description: 'The server Host URL for Intelligent Scan Engine eg http://localhost:1111 or https://21b7.ngrok.io'
     required: true
-  ioServerPort:
-    description: 'The server Port for Intelligent Scan Engine'
-    required: false
-    default: "9090"
   ioServerToken:
     description: 'The server password for Intelligent Scan Engine'
     required: true
@@ -19,14 +15,9 @@ inputs:
     description: 'This file includes configuration of AST tools. eg SCA/SAST/IAST'
     required: false
     default: "SecurityManifest.yml"
-  workflowServerHost:
-    description: 'The server Host URL for Intelligent Scan Engine'
-    required: false
-    default: "ioServerHost"
-  workflowServerPort:
-    description: 'The server Port for Intelligent Scan Engine'
-    required: false
-    default: "9091"
+  workflowServerUrl:
+    description: 'The server Host URL for Intelligent Scan Workflow Engine eg http://localhost:1111 or https://21b7.ngrok.io'
+    required: true
   workflowServerToken:
     description: 'The server password for Intelligent Scan Engine'
     required: true
