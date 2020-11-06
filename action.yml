@@ -24,7 +24,7 @@ inputs:
   workflowVersion:
     description: 'The workflow jar version to retrieve for Intelligent Scan Engine'
     required: false
-    default: 2020.09.01
+    default: 2020.11
   workflowManifest:
     description: 'This file includes details about which tools to run based on IO prescription'
     required: false
