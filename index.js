@@ -22,16 +22,6 @@ try {
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		
-		console.log(process.env.GITHUB_ACTOR)
-		console.log(process.env.GITHUB_REPOSITORY)
-		console.log(process.env.GITHUB_REPOSITORY.split('/')[0])
-		console.log(process.env.GITHUB_REPOSITORY.split('/')[1])
-		console.log(process.env.GITHUB_TOKEN)
-		console.log(process.env.GITHUB_EVENT_NAME)
-		console.log(process.env.GITHUB_REF)
-		console.log(process.env.GITHUB_REF.split('/')[3])
-		console.log(process.env.GITHUB_HEAD_REF)
-
 		let scmType = "github" 
 		let scmOwner = process.env.GITHUB_REPOSITORY.split('/')[0]
 		let scmRepoName = process.env.GITHUB_REPOSITORY.split('/')[1]
@@ -44,15 +34,9 @@ try {
 		else if( process.env.GITHUB_EVENT_NAME === "pull_request") {
 			scmBranchName = process.env.GITHUB_HEAD_REF
 		}
-
-		console.log(scmType)
-		console.log(scmOwner)
-		console.log(scmRepoName)
-		console.log(scmBranchName)
-		console.log(githubUsername)
 		
-		rcode = shell.exec(`./prescription.sh --IO.url=${ioServerUrl} --IO.token=${ioServerToken} --app.manifest.path=${applicationManifest} --sec.manifest.path=${ioManifest} --stage=${stage} --workflow.version=${workflowVersion} ${additionalWorkflowArgs}`).code;
-
+		rcode = shell.exec(`./prescription.sh --IO.url=${ioServerUrl} --IO.token=${ioServerToken} --app.manifest.path=${applicationManifest} --sec.manifest.path=${ioManifest} --stage=${stage} --workflow.version=${workflowVersion} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
+		
 		if (rcode != 0){
 			core.error(`Error: Execution failed and returncode is ${rcode}`);
 			core.setFailed(error.message);
