@@ -21,6 +21,11 @@ try {
 		shell.exec(`wget https://sigdevsecops.blob.core.windows.net/intelligence-orchestration/${workflowVersion}/prescription.sh`)
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
+		
+		console.log(process.env.GITHUB_ACTOR)
+		console.log(process.env.GITHUB_REPOSITORY)
+		console.log(process.env.GITHUB_REF)
+		
 		rcode = shell.exec(`./prescription.sh --IO.url=${ioServerUrl} --IO.token=${ioServerToken} --app.manifest.path=${applicationManifest} --sec.manifest.path=${ioManifest} --stage=${stage} --workflow.version=${workflowVersion} ${additionalWorkflowArgs}`).code;
 
 		if (rcode != 0){
