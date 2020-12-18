@@ -31,6 +31,25 @@ try {
 		console.log(process.env.GITHUB_REF)
 		console.log(process.env.GITHUB_REF.split('/')[3])
 		console.log(process.env.GITHUB_HEAD_REF)
+
+		let scmType = "github" 
+		let scmOwner = process.env.GITHUB_REPOSITORY.split('/')[0]
+		let scmRepoName = process.env.GITHUB_REPOSITORY.split('/')[1]
+		let scmBranchName = ""
+		let githubUsername = process.env.GITHUB_ACTOR
+
+		if( process.env.GITHUB_EVENT_NAME === "push" ){
+			scmBranchName = process.env.GITHUB_REF.split('/')[2]
+		}
+		else if( process.env.GITHUB_EVENT_NAME === "pull_request") {
+			scmBranchName = process.env.GITHUB_HEAD_REF
+		}
+
+		console.log(scmType)
+		console.log(scmOwner)
+		console.log(scmRepoName)
+		console.log(scmBranchName)
+		console.log(githubUsername)
 		
 		rcode = shell.exec(`./prescription.sh --IO.url=${ioServerUrl} --IO.token=${ioServerToken} --app.manifest.path=${applicationManifest} --sec.manifest.path=${ioManifest} --stage=${stage} --workflow.version=${workflowVersion} ${additionalWorkflowArgs}`).code;
 
