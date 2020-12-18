@@ -24,7 +24,13 @@ try {
 		
 		console.log(process.env.GITHUB_ACTOR)
 		console.log(process.env.GITHUB_REPOSITORY)
+		console.log(process.env.GITHUB_REPOSITORY.split('/')[0])
+		console.log(process.env.GITHUB_REPOSITORY.split('/')[1])
+		console.log(process.env.GITHUB_TOKEN)
+		console.log(process.env.GITHUB_EVENT_NAME)
 		console.log(process.env.GITHUB_REF)
+		console.log(process.env.GITHUB_REF.split('/')[3])
+		console.log(process.env.GITHUB_HEAD_REF)
 		
 		rcode = shell.exec(`./prescription.sh --IO.url=${ioServerUrl} --IO.token=${ioServerToken} --app.manifest.path=${applicationManifest} --sec.manifest.path=${ioManifest} --stage=${stage} --workflow.version=${workflowVersion} ${additionalWorkflowArgs}`).code;
 
