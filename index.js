@@ -54,7 +54,7 @@ try {
 		var wffilecode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --stage=${stage} --workflow.version=${workflowVersion} --workflow.url=${workflowServerUrl} --workflow.token=${workflowServerToken} --asset.id=${scmRepoName} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
 		if (wffilecode == 0) {
 			console.log("Workflow file generated successfullly....Calling WorkFlow Engine")
-			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --workflowengine.token="${workflowServerToken}" --io.manifest.path=io-manifest.yml`).code;
+			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --workflowengine.token="${workflowServerToken}" --io.manifest.path=synopsys-io.yml`).code;
 			if (wfclientcode != 0) {
 				core.error(`Error: Workflow failed and returncode is ${wfclientcode}`);
 				core.setFailed(error.message);
