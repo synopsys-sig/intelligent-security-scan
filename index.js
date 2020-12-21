@@ -20,6 +20,15 @@ try {
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		
+		console.log(ioManifestUrl);
+		if(ioManifestUrl !== null && ioManifestUrl !== '')
+		{
+			console.log('not null');
+		}
+		else{
+			console.log('null')
+		}
+
 		let scmType = "github" 
 		let scmOwner = process.env.GITHUB_REPOSITORY.split('/')[0]
 		let scmRepoName = process.env.GITHUB_REPOSITORY.split('/')[1]
