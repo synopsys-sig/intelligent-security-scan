@@ -8,7 +8,7 @@ try {
 	const workflowServerUrl = core.getInput('workflowServerUrl');
 	const workflowServerToken = core.getInput('workflowServerToken');
 	const workflowVersion = core.getInput('workflowVersion');
-	const ioManifestUrl = core.getInput('ioManifest');
+	const ioManifestUrl = core.getInput('ioManifestUrl');
 	const additionalWorkflowArgs = core.getInput('additionalWorkflowArgs')
 	const stage = core.getInput('stage')
 	var rcode = -1
