@@ -43,13 +43,13 @@ try {
 		
 		let rawdata = fs.readFileSync('result.json');
 		let result_json = JSON.parse(rawdata);
-		console.log(result_json);
-		console.log(result_json.security.activities.sast.enabled);
-		console.log(result_json.security.activities.sca.enabled);
+		let is_sast_enabled = result_json.security.activities.sast.enabled
+		let is_sca_enabled = result_json.security.activities.sca.enabled
+		console.log('Is SAST Enabled: '+is_sast_enabled);
+		console.log('Is SCA Enabled: '+is_sca_enabled);
 		
-		shell.exec(`echo "::set-output name=sastScan::$(ruby -rjson -e 'j = JSON.parse(File.read("result.json")); puts j["security"]["activities"]["sast"]["enabled"]')"`)
-		shell.exec(`echo "::set-output name=scaScan::$(ruby -rjson -e 'j = JSON.parse(File.read("result.json")); puts j["security"]["activities"]["sca"]["enabled"]')"`)
-		shell.exec(`echo "::set-output name=dastScan::$(ruby -rjson -e 'j = JSON.parse(File.read("result.json")); puts j["security"]["activities"]["dast"]["enabled"]')"`)
+		shell.exec(`echo ::set-output name=sastScan::${is_sast_enabled}`)
+		shell.exec(`echo ::set-output name=scaScan::${is_sca_enabled}`)
 	}
 	else if (stage.toUpperCase() === "WORKFLOW")  {
 		console.log("Adding scan tool parameters")
