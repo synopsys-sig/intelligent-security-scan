@@ -12,28 +12,28 @@ try {
 	const additionalWorkflowArgs = core.getInput('additionalWorkflowArgs')
 	const stage = core.getInput('stage')
 	var rcode = -1
+	
+	let scmType = "github" 
+	let scmOwner = process.env.GITHUB_REPOSITORY.split('/')[0]
+	let scmRepoName = process.env.GITHUB_REPOSITORY.split('/')[1]
+	let scmBranchName = ""
+	let githubUsername = process.env.GITHUB_ACTOR
 
+	if( process.env.GITHUB_EVENT_NAME === "push" ){
+		scmBranchName = process.env.GITHUB_REF.split('/')[2]
+	}
+	else if( process.env.GITHUB_EVENT_NAME === "pull_request") {
+		scmBranchName = process.env.GITHUB_HEAD_REF
+	}
+	
 	// Irrespective of Machine this should be invoked
 	if(stage.toUpperCase() === "IO") {
 		console.log("Triggering prescription")
 		shell.exec(`wget https://sigdevsecops.blob.core.windows.net/intelligence-orchestration/${workflowVersion}/prescription.sh`)
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
-
-		let scmType = "github" 
-		let scmOwner = process.env.GITHUB_REPOSITORY.split('/')[0]
-		let scmRepoName = process.env.GITHUB_REPOSITORY.split('/')[1]
-		let scmBranchName = ""
-		let githubUsername = process.env.GITHUB_ACTOR
-
-		if( process.env.GITHUB_EVENT_NAME === "push" ){
-			scmBranchName = process.env.GITHUB_REF.split('/')[2]
-		}
-		else if( process.env.GITHUB_EVENT_NAME === "pull_request") {
-			scmBranchName = process.env.GITHUB_HEAD_REF
-		}
 		
-		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --stage=${stage} --workflow.version=${workflowVersion} --asset.id=${scmRepoName} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
+		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --stage=${stage} --workflow.version=${workflowVersion} --asset.id=${scmRepoName} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=true --IS_SCA_ENABLED=true ${additionalWorkflowArgs}`).code;
 		
 		if (rcode != 0){
 			core.error(`Error: Execution failed and returncode is ${rcode}`);
@@ -51,7 +51,7 @@ try {
 			shell.exec(`chmod +x prescription.sh`)
 			shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		}
-		var wffilecode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --stage=${stage} --workflow.url=${workflowServerUrl} --workflow.token=${workflowServerToken} --workflow.version=${workflowVersion} --io.manifest.url=${ioManifestUrl} ${additionalWorkflowArgs}`).code;
+		var wffilecode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --stage=${stage} --workflow.version=${workflowVersion} --workflow.url=${workflowServerUrl} --workflow.token=${workflowServerToken} --asset.id=${scmRepoName} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
 		if (wffilecode == 0) {
 			console.log("Workflow file generated successfullly....Calling WorkFlow Engine")
 			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --workflowengine.token="${workflowServerToken}" --io.manifest.path=io-manifest.yml`).code;
