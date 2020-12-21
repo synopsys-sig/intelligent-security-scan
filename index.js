@@ -20,14 +20,16 @@ try {
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		
-		console.log(ioManifestUrl);
+		let templateUrl = "";
 		if(ioManifestUrl !== null && ioManifestUrl !== '')
 		{
-			console.log('it isss not null');
+			templateUrl = ioManifestUrl;
 		}
 		else{
-			console.log('it isss null')
+			templateUrl = `https://sigdevsecops.blob.core.windows.net/intelligence-orchestration/${workflowVersion}/synopsys-io.yml`
 		}
+
+		console.log(templateUrl);
 
 		let scmType = "github" 
 		let scmOwner = process.env.GITHUB_REPOSITORY.split('/')[0]
