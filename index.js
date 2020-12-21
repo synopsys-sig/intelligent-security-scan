@@ -29,8 +29,6 @@ try {
 			templateUrl = `https://sigdevsecops.blob.core.windows.net/intelligence-orchestration/${workflowVersion}/synopsys-io.yml`
 		}
 
-		console.log(templateUrl);
-
 		let scmType = "github" 
 		let scmOwner = process.env.GITHUB_REPOSITORY.split('/')[0]
 		let scmRepoName = process.env.GITHUB_REPOSITORY.split('/')[1]
@@ -44,15 +42,15 @@ try {
 			scmBranchName = process.env.GITHUB_HEAD_REF
 		}
 		
-		rcode = shell.exec(`./prescription.sh --IO.url=${ioServerUrl} --IO.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --stage=${stage} --workflow.version=${workflowVersion} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
+		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --stage=${stage} --workflow.version=${workflowVersion} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
 		
 		if (rcode != 0){
 			core.error(`Error: Execution failed and returncode is ${rcode}`);
 			core.setFailed(error.message);
 		}
 		shell.exec(`echo "::set-output name=sastScan::$(ruby -rjson -e 'j = JSON.parse(File.read("result.json")); puts j["security"]["activities"]["sast"]["enabled"]')"`)
-    		shell.exec(`echo "::set-output name=scaScan::$(ruby -rjson -e 'j = JSON.parse(File.read("result.json")); puts j["security"]["activities"]["sca"]["enabled"]')"`)
-    		shell.exec(`echo "::set-output name=dastScan::$(ruby -rjson -e 'j = JSON.parse(File.read("result.json")); puts j["security"]["activities"]["dast"]["enabled"]')"`)
+		shell.exec(`echo "::set-output name=scaScan::$(ruby -rjson -e 'j = JSON.parse(File.read("result.json")); puts j["security"]["activities"]["sca"]["enabled"]')"`)
+		shell.exec(`echo "::set-output name=dastScan::$(ruby -rjson -e 'j = JSON.parse(File.read("result.json")); puts j["security"]["activities"]["dast"]["enabled"]')"`)
 	}
 	else if (stage.toUpperCase() === "WORKFLOW")  {
 		console.log("Adding scan tool parameters")
@@ -62,7 +60,7 @@ try {
 			shell.exec(`chmod +x prescription.sh`)
 			shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		}
-		var wffilecode = shell.exec(`./prescription.sh --IO.url=${ioServerUrl} --IO.token=${ioServerToken} --stage=${stage} --workflow.url=${workflowServerUrl} --workflow.token=${workflowServerToken} --workflow.version=${workflowVersion} --io.manifest.url=${ioManifestUrl} ${additionalWorkflowArgs}`).code;
+		var wffilecode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --stage=${stage} --workflow.url=${workflowServerUrl} --workflow.token=${workflowServerToken} --workflow.version=${workflowVersion} --io.manifest.url=${ioManifestUrl} ${additionalWorkflowArgs}`).code;
 		if (wffilecode == 0) {
 			console.log("Workflow file generated successfullly....Calling WorkFlow Engine")
 			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --workflowengine.token="${workflowServerToken}" --io.manifest.path=synopsys-io.yml`).code;
