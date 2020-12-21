@@ -23,10 +23,10 @@ try {
 		console.log(ioManifestUrl);
 		if(ioManifestUrl !== null && ioManifestUrl !== '')
 		{
-			console.log('not null');
+			console.log('it isss not null');
 		}
 		else{
-			console.log('null')
+			console.log('it isss null')
 		}
 
 		let scmType = "github" 
