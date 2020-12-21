@@ -42,7 +42,7 @@ try {
 			scmBranchName = process.env.GITHUB_HEAD_REF
 		}
 		
-		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${templateUrl} --stage=${stage} --workflow.version=${workflowVersion} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
+		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${templateUrl} --stage=${stage} --workflow.version=${workflowVersion} --asset.id=${scmRepoName} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
 		
 		if (rcode != 0){
 			core.error(`Error: Execution failed and returncode is ${rcode}`);
