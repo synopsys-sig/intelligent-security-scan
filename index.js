@@ -40,6 +40,13 @@ try {
 			core.error(`Error: Execution failed and returncode is ${rcode}`);
 			core.setFailed(error.message);
 		}
+		
+		let rawdata = fs.readFileSync('result.json');
+		let result_json = JSON.parse(rawdata);
+		console.log(result_json);
+		console.log(result_json.security.activities.sast.enabled);
+		console.log(result_json.security.activities.sca.enabled);
+		
 		shell.exec(`echo "::set-output name=sastScan::$(ruby -rjson -e 'j = JSON.parse(File.read("result.json")); puts j["security"]["activities"]["sast"]["enabled"]')"`)
 		shell.exec(`echo "::set-output name=scaScan::$(ruby -rjson -e 'j = JSON.parse(File.read("result.json")); puts j["security"]["activities"]["sca"]["enabled"]')"`)
 		shell.exec(`echo "::set-output name=dastScan::$(ruby -rjson -e 'j = JSON.parse(File.read("result.json")); puts j["security"]["activities"]["dast"]["enabled"]')"`)
