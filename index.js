@@ -31,10 +31,10 @@ try {
 	if(ioServerToken === "" && ioServerUrl === "http://localhost:9090"){
 		//optionally can run ephemeral IO containers here
 		console.log("Authenticating the Ephemeral IO Server");
-		shell.exec(`curl -X POST ${ioServerUrl}/io/user/signup -H "Content-Type:application/json" -d "{\"userName\":\"user123\",\"password\":\"P@ssw0rd!\",\"confirmPassword\":\"P@ssw0rd!\"}"`)
+		shell.exec(`curl -X POST ${ioServerUrl}/io/user/signup -H "Content-Type:application/json" -d "{"userName":"user123","password":"P@ssw0rd!","confirmPassword":"P@ssw0rd!"}"`)
 		
 		module.exports.getIOToken = async function getIOToken () {
-			const ioTempToken = await exec(`curl -X POST ${ioServerUrl}/io/user/token -H "Content-Type:application/json" -d "{\"userName\":\"user123\",\"password\":\"P@ssw0rd!\"}"`)
+			const ioTempToken = await exec(`curl -X POST ${ioServerUrl}/io/user/token -H "Content-Type:application/json" -d "{"userName":"user123","password":"P@ssw0rd!"}"`)
 			return { ioTempToken }
 		};
 		
