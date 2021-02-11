@@ -28,17 +28,29 @@ try {
 		scmBranchName = process.env.GITHUB_HEAD_REF
 	}
 	
+	let signupRequest = {
+		userName: "user123",
+		password: "P@ssw0rd!",
+		confirmPassword:"P@ssw0rd!"
+	}
+
+	let tokenRequest = {
+		userName: "user123",
+		password: "P@ssw0rd!",
+	}
+
 	if(ioServerToken === "" && ioServerUrl === "http://localhost:9090"){
 		//optionally can run ephemeral IO containers here
 		console.log("Authenticating the Ephemeral IO Server");
-		shell.exec(`curl -X POST ${ioServerUrl}/io/user/signup -H "Content-Type:application/json" -d "{"userName":"user123","password":"P@ssw0rd!","confirmPassword":"P@ssw0rd!"}"`)
+		shell.exec(`curl -X POST ${ioServerUrl}/io/user/signup -H "Content-Type:application/json" -d "${signupRequest}"`)
 		
 		module.exports.getIOToken = async function getIOToken () {
-			const ioTempToken = await exec(`curl -X POST ${ioServerUrl}/io/user/token -H "Content-Type:application/json" -d "{"userName":"user123","password":"P@ssw0rd!"}"`)
+			const ioTempToken = await exec(`curl -X POST ${ioServerUrl}/io/user/token -H "Content-Type:application/json" -d "${tokenRequest}"`)
+			console.log(ioTempToken);
 			return { ioTempToken }
 		};
 		
-		console.log(ioTempToken);
+		//console.log(ioTempToken);
 		console.log("Ephemeral IO Server Authentication Completed");
 	}
 
