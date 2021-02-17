@@ -28,6 +28,9 @@ try {
 		scmBranchName = process.env.GITHUB_HEAD_REF
 	}
 	
+	console.log(process.env.GITHUB_ACTOR);
+	console.log(process.env.GITHUB_REPOSITORY);
+	
 	if(ioServerToken === "" && ioServerUrl === "http://localhost:9090"){
 		//optionally can run ephemeral IO containers here
 		console.log("\nAuthenticating the Ephemeral IO Server");
