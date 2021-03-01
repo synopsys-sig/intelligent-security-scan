@@ -55,8 +55,9 @@ jobs:
       with:
         ioServerHost: "${{ secrets.IO_SERVER_HOST}}"
         ioServerToken: "${{ secrets.IO_SERVER_TOKEN}}"
-        workflowServerToken: "${{ secrets.WORKFLOW_SERVER_TOKEN}}"
-        additionalWorkflowArgs: ""
+        additionalWorkflowArgs: --persona=developer --release.type=minor --sast.rescan.threshold=5  --sca.rescan.threshold=5 
+                  --polaris.url=${{secrets.ORG_POLARIS_SERVER_URL}} --polaris.token=${{secrets.ORG_POLARIS_ACCESS_TOKEN}} 
+                  --sensitive.package.pattern='.*(\\+\\+\\+.*(com\\/example\\/app)).*'
         stage: "IO"
 
     # Please note that the ID in previous step was set to prescription
@@ -84,8 +85,10 @@ jobs:
       with:
         ioServerHost: "${{ secrets.IO_SERVER_HOST}}"
         ioServerToken: "${{ secrets.IO_SERVER_TOKEN}}"
-        workflowServerToken: "${{ secrets.WORKFLOW_SERVER_TOKEN}}"
-        additionalWorkflowArgs: "--slack.token=${{secrets.SLACK_TOKEN}} --IS_SAST_ENABLED=${{steps.prescription.outputs.sastScan}} --polaris.url=${{secrets.POLARIS_SERVER_URL}} --polaris.access.token=${{secrets.POLARIS_ACCESS_TOKEN}}"
+        additionalWorkflowArgs: --slack.channel.id=C015LGE7RRQ --slack.token=${{secrets.ORG_SLACK_TOKEN}} 
+                --IS_SAST_ENABLED=true --IS_SCA_ENABLED=true 
+                --polaris.project.name=sig-devsecops/github-io-sample --polaris.url=${{secrets.ORG_POLARIS_SERVER_URL}} --polaris.token=${{secrets.ORG_POLARIS_ACCESS_TOKEN}} 
+                --blackduck.project.name=github-io-sample:1.0.0 --blackduck.url=${{secrets.ORG_BLACKDUCK_URL}} --blackduck.api.token=${{secrets.ORG_BLACKDUCK_TOKEN}}
         stage: "WORKFLOW"
 
     - name: Upload SARIF file
