@@ -56,7 +56,7 @@ jobs:
         ioServerHost: "${{ secrets.IO_SERVER_HOST}}"
         ioServerToken: "${{ secrets.IO_SERVER_TOKEN}}"
         additionalWorkflowArgs: --persona=developer --release.type=minor --sast.rescan.threshold=5  --sca.rescan.threshold=5 
-                  --polaris.url=${{secrets.ORG_POLARIS_SERVER_URL}} --polaris.token=${{secrets.ORG_POLARIS_ACCESS_TOKEN}} 
+                  --polaris.url=${{secrets.POLARIS_SERVER_URL}} --polaris.token=${{secrets.POLARIS_ACCESS_TOKEN}} 
                   --sensitive.package.pattern='.*(\\+\\+\\+.*(com\\/example\\/app)).*'
         stage: "IO"
 
@@ -83,12 +83,12 @@ jobs:
     - name: Synopsys Intelligent Security Scan
       uses: synopsys-sig/intelligent-security-scan@v1
       with:
-        ioServerHost: "${{ secrets.IO_SERVER_HOST}}"
-        ioServerToken: "${{ secrets.IO_SERVER_TOKEN}}"
-        additionalWorkflowArgs: --slack.channel.id=C015LGE7RRQ --slack.token=${{secrets.ORG_SLACK_TOKEN}} 
-                --IS_SAST_ENABLED=true --IS_SCA_ENABLED=true 
-                --polaris.project.name=sig-devsecops/github-io-sample --polaris.url=${{secrets.ORG_POLARIS_SERVER_URL}} --polaris.token=${{secrets.ORG_POLARIS_ACCESS_TOKEN}} 
-                --blackduck.project.name=github-io-sample:1.0.0 --blackduck.url=${{secrets.ORG_BLACKDUCK_URL}} --blackduck.api.token=${{secrets.ORG_BLACKDUCK_TOKEN}}
+        ioServerHost: "${{secrets.IO_SERVER_HOST}}"
+        ioServerToken: "${{secrets.IO_SERVER_TOKEN}}"
+        additionalWorkflowArgs: --IS_SAST_ENABLED=${{steps.prescription.outputs.sastScan}} --IS_SCA_ENABLED=${{steps.prescription.outputs.scaScan}}
+                --slack.channel.id={{CHANNEL_ID}} --slack.token=${{secrets.SLACK_TOKEN}} 
+                --polaris.project.name={{PROJECT_NAME}} --polaris.url=${{secrets.POLARIS_SERVER_URL}} --polaris.token=${{secrets.POLARIS_ACCESS_TOKEN}} 
+                --blackduck.project.name={{PROJECT_NAME}}:{{PROJECT_VERSION}} --blackduck.url=${{secrets.BLACKDUCK_URL}} --blackduck.api.token=${{secrets.BLACKDUCK_TOKEN}}
         stage: "WORKFLOW"
 
     - name: Upload SARIF file
