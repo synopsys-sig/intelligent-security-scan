@@ -1,3 +1,5 @@
+# Copyright (c) 2021 Synopsys, Inc. All rights reserved worldwide.
+
 name: 'Synopsys Intelligent Security Scan'
 description: 'Initiate optimized SAST/SCA scans based on code changes and policy with filtered results for display in GitHub.'
 author: 'DevSecOps Team @ Synopsys SIG'

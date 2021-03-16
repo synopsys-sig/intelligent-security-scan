@@ -1,3 +1,5 @@
+// Copyright (c) 2021 Synopsys, Inc. All rights reserved worldwide.
+
 const core = require('@actions/core');
 const shell = require('shelljs');
 const fs = require('fs');
