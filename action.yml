@@ -25,7 +25,7 @@ inputs:
   workflowVersion:
     description: 'The workflow jar version to retrieve for Intelligent Scan Engine'
     required: false
-    default: 2021.01
+    default: v0.1-alpha
   additionalWorkflowArgs:
     description: 'Additional arguments required for workflow engine arguments'
     required: true
