@@ -29,15 +29,6 @@ try {
 	else if( process.env.GITHUB_EVENT_NAME === "pull_request") {
 		scmBranchName = process.env.GITHUB_HEAD_REF
 	}
-	
-	if(ioServerToken === "" && ioServerUrl === "http://localhost:9090"){
-		//optionally can run ephemeral IO containers here
-		console.log("\nAuthenticating the Ephemeral IO Server");
-		shell.exec(`curl -X POST ${ioServerUrl}/io/user/signup -H "Content-Type:application/json" -d '{"userName": "user123", "password": "P@ssw0rd!", "confirmPassword":"P@ssw0rd!"}'`)
-		var ioTempToken = shell.exec(`curl -X POST ${ioServerUrl}/io/user/token -H "Content-Type:application/json" -d '{"userName": "user123", "password": "P@ssw0rd!"}'`, { silent: true }).stdout
-		ioServerToken = ioTempToken;
-		console.log("\nEphemeral IO Server Authentication Completed");
-	}
 
 	// Irrespective of Machine this should be invoked
 	if(stage.toUpperCase() === "IO") {
