@@ -15,7 +15,7 @@ try {
 	const additionalWorkflowArgs = core.getInput('additionalWorkflowArgs')
 	const stage = core.getInput('stage')
 	var rcode = -1
-	const releaseType =core.getInput('releaseType')
+	const releaseType = core.getInput('releaseType')
 	
 	let scmType = "github"
 	let scmOwner = process.env.GITHUB_REPOSITORY.split('/')[0]
