@@ -42,11 +42,6 @@ try {
 	
 	// Irrespective of Machine this should be invoked
 	if(stage.toUpperCase() === "IO") {
-		if (releaseType.toUpperCase() !== "MAJOR" && releaseType.toUpperCase() !== "MINOR") {
-			core.error(`Error: Invalid releaseType given as input, Accepted values are [MAJOR, MINOR]`);
-			core.setFailed(error.message);
-		}
-
 		console.log("Triggering prescription")
 		shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
 		shell.exec(`chmod +x prescription.sh`)
