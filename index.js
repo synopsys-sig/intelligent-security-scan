@@ -40,11 +40,6 @@ try {
 		console.log("\nEphemeral IO Server Authentication Completed");
 	}
 	
-	if (releaseType.toUpperCase() !== "MAJOR" && releaseType.toUpperCase() !== "MINOR") {
-		core.error(`Error: Invalid releaseType given as input, Accepted values are [MAJOR, MINOR]`);
-		core.setFailed(error.message);
-	}
-	
 	// Irrespective of Machine this should be invoked
 	if(stage.toUpperCase() === "IO") {
 		console.log("Triggering prescription")
