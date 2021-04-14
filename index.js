@@ -43,6 +43,14 @@ try {
 	// Irrespective of Machine this should be invoked
 	if(stage.toUpperCase() === "IO") {
 		console.log("Triggering prescription")
+
+		if (fs.existsSync("prescription.sh")) {
+			try {
+				fs.unlinkSync('prescription.sh');
+			} catch (err) {
+			}
+		}
+
 		shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
