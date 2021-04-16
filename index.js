@@ -16,6 +16,7 @@ try {
 	const stage = core.getInput('stage')
 	var rcode = -1
 	const releaseType = core.getInput('releaseType')
+	const manifestType = core.getInput('manifestType')
 	
 	let scmType = "github"
 	let scmOwner = process.env.GITHUB_REPOSITORY.split('/')[0]
@@ -83,7 +84,14 @@ try {
 		var wffilecode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --workflow.url=${workflowServerUrl} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
 		if (wffilecode == 0) {
 			console.log("Workflow file generated successfullly....Calling WorkFlow Engine")
-			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --io.manifest.path=synopsys-io.yml`).code;
+			let configFile = ""
+			if(manifestType === "yml"){
+				configFile = "synopsys-io.yml"
+			}
+			else if(manifestType === "json"){
+				configFile = "synopsys-io.json"
+			}
+			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --io.manifest.path="${configFile}"`).code;
 			if (wfclientcode != 0) {
 				core.error(`Error: Workflow failed and returncode is ${wfclientcode}`);
 				core.setFailed(error.message);
