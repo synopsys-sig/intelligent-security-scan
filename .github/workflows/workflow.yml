@@ -1,0 +1,17 @@
+name: Go
+on:
+  push:
+    branches: [ bd-scan ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Software Composition Analysis with Black Duck
+      uses: blackducksoftware/github-action@v2
+      with:
+         args: '--blackduck.url="${{ secrets.BLACKDUCK_URL}}" --blackduck.api.token="${{ secrets.BLACKDUCK_TOKEN}}"''
