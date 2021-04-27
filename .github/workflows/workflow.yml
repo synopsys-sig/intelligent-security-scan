@@ -14,4 +14,4 @@ jobs:
     - name: Software Composition Analysis with Black Duck
       uses: blackducksoftware/github-action@v2
       with:
-         args: '--blackduck.url="${{ secrets.BLACKDUCK_URL}}" --blackduck.api.token="${{ secrets.BLACKDUCK_TOKEN}}"''
+         args: --blackduck.url="${{ secrets.BLACKDUCK_URL}}" --blackduck.api.token="${{ secrets.BLACKDUCK_TOKEN}}"
