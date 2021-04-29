@@ -45,12 +45,7 @@ try {
 	if(stage.toUpperCase() === "IO") {
 		console.log("Triggering prescription")
 
-		if (fs.existsSync("prescription.sh")) {
-			try {
-				fs.unlinkSync('prescription.sh');
-			} catch (err) {
-			}
-		}
+		removeFile("prescription.sh");
 
 		shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
 		shell.exec(`chmod +x prescription.sh`)
@@ -72,6 +67,7 @@ try {
 		
 		shell.exec(`echo ::set-output name=sastScan::${is_sast_enabled}`)
 		shell.exec(`echo ::set-output name=scaScan::${is_sca_enabled}`)
+		removeFile("synopsys-io.yml");
 	}
 	else if (stage.toUpperCase() === "WORKFLOW")  {
 		console.log("Adding scan tool parameters")
@@ -101,6 +97,7 @@ try {
 			core.error(`Error: Workflow file generation failed and returncode is ${wffilecode}`);
 			core.setFailed(error.message);
 		}
+		removeFile("synopsys-io.yml");
 	}
 	else {
 		core.error(`Error: Invalid stage given as input`);
@@ -112,3 +109,11 @@ catch (error) {
 	core.setFailed(error.message);
 }
 
+function removeFile(fileName) {
+	if (fs.existsSync(fileName)) {
+		try {
+			fs.unlinkSync(fileName);
+		} catch (err) {
+		}
+	}
+}
