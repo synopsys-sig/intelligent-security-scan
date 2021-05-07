@@ -16,6 +16,7 @@ try {
 	const stage = core.getInput('stage')
 	var rcode = -1
 	const releaseType = core.getInput('releaseType')
+	const manifestType = core.getInput('manifestType')
 	
 	let scmType = "github"
 	let scmOwner = process.env.GITHUB_REPOSITORY.split('/')[0]
@@ -55,7 +56,7 @@ try {
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		
-		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=true --IS_SCA_ENABLED=true ${additionalWorkflowArgs}`).code;
+		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=true --IS_SCA_ENABLED=true ${additionalWorkflowArgs}`).code;
 		
 		if (rcode != 0){
 			core.error(`Error: Execution failed and returncode is ${rcode}`);
@@ -80,10 +81,17 @@ try {
 			shell.exec(`chmod +x prescription.sh`)
 			shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		}
-		var wffilecode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --workflow.url=${workflowServerUrl} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
+		var wffilecode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --workflow.url=${workflowServerUrl} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
 		if (wffilecode == 0) {
 			console.log("Workflow file generated successfullly....Calling WorkFlow Engine")
-			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --io.manifest.path=synopsys-io.yml`).code;
+			let configFile = ""
+			if(manifestType === "yml"){
+				configFile = "synopsys-io.yml"
+			}
+			else if(manifestType === "json"){
+				configFile = "synopsys-io.json"
+			}
+			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --io.manifest.path="${configFile}"`).code;
 			if (wfclientcode != 0) {
 				core.error(`Error: Workflow failed and returncode is ${wfclientcode}`);
 				core.setFailed(error.message);

@@ -33,6 +33,10 @@ inputs:
     description: 'Additional arguments required for workflow engine arguments'
     required: true
     default: 'IO' # This is either IO or WORKFLOW 
+  manifestType:
+    description: 'Type of Manifest file for IO'
+    required: false
+    default: 'yml' # This is either yml or json 
 
 runs:
   using: 'node12'
