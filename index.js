@@ -98,8 +98,7 @@ try {
 			core.error(`Error: Workflow file generation failed and returncode is ${wffilecode}`);
 			core.setFailed(error.message);
 		}
-		removeFile("synopsys-io.yml");
-		removeFile("synopsys-io.json");
+		removeFile(configFile);
 	}
 	else {
 		core.error(`Error: Invalid stage given as input`);
