@@ -51,7 +51,7 @@ try {
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		
-		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=true --IS_SCA_ENABLED=true ${additionalWorkflowArgs}`).code;
+		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=true --IS_SCA_ENABLED=true --IS_DAST_ENABLED=true ${additionalWorkflowArgs}`).code;
 		
 		if (rcode != 0){
 			core.error(`Error: Execution failed and returncode is ${rcode}`);
@@ -62,11 +62,13 @@ try {
 		let result_json = JSON.parse(rawdata);
 		let is_sast_enabled = result_json.security.activities.sast.enabled
 		let is_sca_enabled = result_json.security.activities.sca.enabled
+		let is_dast_enabled = result_json.security.activities.dast.enabled
 		console.log('Is SAST Enabled: '+is_sast_enabled);
 		console.log('Is SCA Enabled: '+is_sca_enabled);
 		
 		shell.exec(`echo ::set-output name=sastScan::${is_sast_enabled}`)
 		shell.exec(`echo ::set-output name=scaScan::${is_sca_enabled}`)
+		shell.exec(`echo ::set-output name=dastScan::${is_dast_enabled}`)
 		removeFile("synopsys-io.yml");
 		removeFile("synopsys-io.json");
 	}
