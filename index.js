@@ -63,6 +63,7 @@ try {
 		let is_sast_enabled = result_json.security.activities.sast.enabled
 		let is_sca_enabled = result_json.security.activities.sca.enabled
 		//let is_dast_enabled = result_json.security.activities.dast.enabled
+		let is_dast_enabled = (typeof result_json.security.activities.dast.enabled === 'undefined') ? false : is_dast_enabled;
 		console.log('Is SAST Enabled: '+is_sast_enabled);
 		console.log('Is SCA Enabled: '+is_sca_enabled);
 		
