@@ -49,7 +49,7 @@ try {
 
 		shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
 		shell.exec(`chmod +x prescription.sh`)
-		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
+		shell.exec(`dos2unix prescription.sh`)
 		
 		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=true --IS_SCA_ENABLED=true --IS_DAST_ENABLED=true ${additionalWorkflowArgs}`).code;
 		
@@ -78,7 +78,7 @@ try {
 		if (!fs.existsSync("prescription.sh")) {
 			shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
 			shell.exec(`chmod +x prescription.sh`)
-			shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
+			shell.exec(`dos2unix prescription.sh`)
 		}
 		var wffilecode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --workflow.url=${workflowServerUrl} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
 		let configFile = ""
