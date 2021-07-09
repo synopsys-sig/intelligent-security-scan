@@ -25,7 +25,7 @@ try {
 	let githubUsername = process.env.GITHUB_ACTOR
 	let asset_id = process.env.GITHUB_REPOSITORY
 
-	if( process.env.GITHUB_EVENT_NAME === "push" ){
+	if( process.env.GITHUB_EVENT_NAME === "push" || process.env.GITHUB_EVENT_NAME === "workflow_dispatch"){
 		scmBranchName = process.env.GITHUB_REF.split('/')[2]
 	}
 	else if( process.env.GITHUB_EVENT_NAME === "pull_request") {
