@@ -47,7 +47,7 @@ try {
 
 		removeFile("prescription.sh");
 
-		shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
+		//shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		
@@ -92,7 +92,7 @@ try {
 		console.log("Adding scan tool parameters")
 		// file doesn't exist
 		if (!fs.existsSync("prescription.sh")) {
-			shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
+			//shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
 			shell.exec(`chmod +x prescription.sh`)
 			shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		}
