@@ -48,6 +48,7 @@ try {
 		removeFile("prescription.sh");
 
 		//shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
+		shell.exec(`ls`)
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		
