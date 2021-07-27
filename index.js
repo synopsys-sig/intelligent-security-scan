@@ -45,7 +45,7 @@ try {
 	if(stage.toUpperCase() === "IO") {
 		console.log("Triggering prescription")
 
-		removeFile("prescription.sh");
+		//removeFile("prescription.sh");
 
 		//shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
 		shell.exec(`ls -la`)
