@@ -55,7 +55,7 @@ jobs:
       with:
         ioServerHost: "${{ secrets.IO_SERVER_HOST}}"
         ioServerToken: "${{ secrets.IO_SERVER_TOKEN}}"
-        additionalWorkflowArgs: --persona=developer --release.type=minor --sast.rescan.threshold=5  --sca.rescan.threshold=5 
+        additionalWorkflowArgs: --persona=developer --release.type=minor --sast.rescan.threshold=5 --sca.rescan.threshold=5 
                   --polaris.url=${{secrets.POLARIS_SERVER_URL}} --polaris.token=${{secrets.POLARIS_ACCESS_TOKEN}} 
                   --sensitive.package.pattern='.*(\\+\\+\\+.*(com\\/example\\/app)).*'
         stage: "IO"
