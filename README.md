@@ -51,10 +51,10 @@ jobs:
 
     - name: Synopsys Intelligent Security Scan
       id: prescription
-      uses: synopsys-sig/intelligent-security-scan@v1
+      uses: synopsys-sig/intelligent-security-scan@2021.8.1
       with:
-        ioServerHost: "${{ secrets.IO_SERVER_HOST}}"
-        ioServerToken: "${{ secrets.IO_SERVER_TOKEN}}"
+        ioServerUrl: "${{secrets.IO_SERVER_URL}}"
+        ioServerToken: "${{secrets.IO_SERVER_TOKEN}}"
         additionalWorkflowArgs: --persona=developer --release.type=minor --sast.rescan.threshold=5 --sca.rescan.threshold=5 
                   --polaris.url=${{secrets.POLARIS_SERVER_URL}} --polaris.token=${{secrets.POLARIS_ACCESS_TOKEN}} 
                   --sensitive.package.pattern='.*(\\+\\+\\+.*(com\\/example\\/app)).*'
@@ -66,29 +66,30 @@ jobs:
     - name: Static Analysis with Polaris
       if: ${{steps.prescription.outputs.sastScan == 'true' }}
       run: |
-          export POLARIS_SERVER_URL=${{ secrets.POLARIS_SERVER_URL}}
-          export POLARIS_ACCESS_TOKEN=${{ secrets.POLARIS_ACCESS_TOKEN}}
-          wget -q ${{ secrets.POLARIS_SERVER_URL}}/api/tools/polaris_cli-linux64.zip
-          unzip -j polaris_cli-linux64.zip -d /tmp
+          export POLARIS_SERVER_URL=${{secrets.POLARIS_SERVER_URL}}
+          export POLARIS_ACCESS_TOKEN=${{secrets.POLARIS_ACCESS_TOKEN}}
+          wget -q ${{secrets.POLARIS_SERVER_URL}}/api/tools/polaris_cli-linux64.zip
+          unzip -j -o polaris_cli-linux64.zip -d /tmp
           /tmp/polaris analyze -w
 
     # Please note that the ID in previous step was set to prescription
     # in order for this logic to work
     - name: Software Composition Analysis with Black Duck
-      if: ${{steps.prescription.outputs.scaScan == 'true' }}
+      if: ${{steps.prescription.outputs.scaScan == 'true'}}
       uses: blackducksoftware/github-action@v2
       with:
-        args: '--blackduck.url="${{ secrets.BLACKDUCK_URL}}" --blackduck.api.token="${{ secrets.BLACKDUCK_API_TOKEN}}" --detect.tools="DETECTOR"'
+        args: '--blackduck.url="${{secrets.BLACKDUCK_URL}}" --blackduck.api.token="${{secrets.BLACKDUCK_API_TOKEN}}" --detect.tools="DETECTOR"'
 
     - name: Synopsys Intelligent Security Scan
-      uses: synopsys-sig/intelligent-security-scan@v1
+      uses: synopsys-sig/intelligent-security-scan@2021.8.1
       with:
-        ioServerHost: "${{secrets.IO_SERVER_HOST}}"
+        ioServerUrl: "${{secrets.IO_SERVER_URL}}"
         ioServerToken: "${{secrets.IO_SERVER_TOKEN}}"
+        workflowServerUrl: "${{secrets.WORKFLOW_SERVER_URL}}"
         additionalWorkflowArgs: --IS_SAST_ENABLED=${{steps.prescription.outputs.sastScan}} --IS_SCA_ENABLED=${{steps.prescription.outputs.scaScan}}
-                --slack.channel.id={{CHANNEL_ID}} --slack.token=${{secrets.SLACK_TOKEN}} 
-                --polaris.project.name={{PROJECT_NAME}} --polaris.url=${{secrets.POLARIS_SERVER_URL}} --polaris.token=${{secrets.POLARIS_ACCESS_TOKEN}} 
-                --blackduck.project.name={{PROJECT_NAME}}:{{PROJECT_VERSION}} --blackduck.url=${{secrets.BLACKDUCK_URL}} --blackduck.api.token=${{secrets.BLACKDUCK_TOKEN}}
+                --slack.channel.id=${{secrets.SLACK_CHANNEL_ID}} --slack.token=${{secrets.SLACK_TOKEN}} 
+                --polaris.project.name=${{secrets.POLARIS_PROJECT_NAME}} --polaris.url=${{secrets.POLARIS_SERVER_URL}} --polaris.token=${{secrets.POLARIS_ACCESS_TOKEN}} 
+                --blackduck.project.name=${{secrets.BLACKDUCK_PROJECT_NAME}} --blackduck.url=${{secrets.BLACKDUCK_URL}} --blackduck.api.token=${{secrets.BLACKDUCK_TOKEN}}
         stage: "WORKFLOW"
 
     - name: Upload SARIF file
