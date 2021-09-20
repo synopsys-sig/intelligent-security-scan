@@ -51,9 +51,9 @@ jobs:
 
     - name: Synopsys Intelligent Security Scan
       id: prescription
-      uses: synopsys-sig/intelligent-security-scan@v1
+      uses: synopsys-sig/intelligent-security-scan@2021.8.1
       with:
-        ioServerUrl: "${{secrets.IO_SERVER_HOST}}"
+        ioServerUrl: "${{secrets.IO_SERVER_URL}}"
         ioServerToken: "${{secrets.IO_SERVER_TOKEN}}"
         additionalWorkflowArgs: --persona=developer --release.type=minor --sast.rescan.threshold=5 --sca.rescan.threshold=5 
                   --polaris.url=${{secrets.POLARIS_SERVER_URL}} --polaris.token=${{secrets.POLARIS_ACCESS_TOKEN}} 
@@ -81,10 +81,11 @@ jobs:
         args: '--blackduck.url="${{secrets.BLACKDUCK_URL}}" --blackduck.api.token="${{secrets.BLACKDUCK_API_TOKEN}}" --detect.tools="DETECTOR"'
 
     - name: Synopsys Intelligent Security Scan
-      uses: synopsys-sig/intelligent-security-scan@v1
+      uses: synopsys-sig/intelligent-security-scan@2021.8.1
       with:
-        ioServerUrl: "${{secrets.IO_SERVER_HOST}}"
+        ioServerUrl: "${{secrets.IO_SERVER_URL}}"
         ioServerToken: "${{secrets.IO_SERVER_TOKEN}}"
+        workflowServerUrl: "${{secrets.WORKFLOW_SERVER_URL}}"
         additionalWorkflowArgs: --IS_SAST_ENABLED=${{steps.prescription.outputs.sastScan}} --IS_SCA_ENABLED=${{steps.prescription.outputs.scaScan}}
                 --slack.channel.id={{CHANNEL_ID}} --slack.token=${{secrets.SLACK_TOKEN}} 
                 --polaris.project.name={{PROJECT_NAME}} --polaris.url=${{secrets.POLARIS_SERVER_URL}} --polaris.token=${{secrets.POLARIS_ACCESS_TOKEN}} 
