@@ -86,8 +86,8 @@ try {
 		shell.exec(`echo ::set-output name=sastScan::${is_sast_enabled}`)
 		shell.exec(`echo ::set-output name=scaScan::${is_sca_enabled}`)
 		shell.exec(`echo ::set-output name=dastScan::${is_dast_enabled}`)
-		//removeFile("synopsys-io.yml");
-		//removeFile("synopsys-io.json");
+		removeFile("synopsys-io.yml");
+		removeFile("synopsys-io.json");
 	}
 	else if (stage.toUpperCase() === "WORKFLOW")  {
 		console.log("Adding scan tool parameters")
@@ -122,7 +122,7 @@ try {
 			core.error(`Error: Workflow file generation failed and returncode is ${wffilecode}`);
 			core.setFailed(error.message);
 		}
-		//removeFile(configFile);
+		removeFile(configFile);
 	}
 	else {
 		core.error(`Error: Invalid stage given as input`);
