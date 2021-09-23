@@ -55,7 +55,6 @@ try {
 		
 		if (rcode != 0){
 			core.error(`Error: Execution failed and returncode is ${rcode}`);
-			core.setFailed(error.message);
 		}
 		
 		let rawdata = fs.readFileSync('result.json');
@@ -93,18 +92,15 @@ try {
 			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --io.manifest.path="${configFile}"`).code;
 			if (wfclientcode != 0) {
 				core.error(`Error: Workflow failed and returncode is ${wfclientcode}`);
-				core.setFailed(error.message);
 			}
 		}
 		else {
 			core.error(`Error: Workflow file generation failed and returncode is ${wffilecode}`);
-			core.setFailed(error.message);
 		}
 		removeFile(configFile);
 	}
 	else {
 		core.error(`Error: Invalid stage given as input`);
-		core.setFailed(error.message);
 	}
 }
 
