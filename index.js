@@ -63,9 +63,25 @@ try {
 		let is_sast_enabled = result_json.security.activities.sast.enabled
 		let is_sca_enabled = result_json.security.activities.sca.enabled
 		let is_dast_enabled = ((result_json.security.activities.dast && result_json.security.activities.dast.enabled) || false);
+		console.log("================================== IO Prescription =======================================")
 		console.log('Is SAST Enabled: '+is_sast_enabled);
 		console.log('Is SCA Enabled: '+is_sca_enabled);
-		
+
+		if (getPersona() === "devsecops") {
+		    console.log("==================================== IO Risk Score =======================================")
+			console.log(`Buisness Criticality Score - ${result_json.riskScoreCard.bizCriticalityScore}`)
+			console.log(`Data Class Score - ${result_json.riskScoreCard.dataClassScore}`)
+			console.log(`Access Score - ${result_json.riskScoreCard.accessScore}`)
+			console.log(`Open Vulnerability Score - ${result_json.riskScoreCard.openVulnScore}`)
+			console.log(`Change Significance Score - ${result_json.riskScoreCard.changeSignificanceScore}`)
+			let bizScore = parseFloat(result_json.riskScoreCard.bizCriticalityScore.split("/")[1])
+			let dataScore = parseFloat(result_json.riskScoreCard.dataClassScore.split("/")[1])
+			let accessScore = parseFloat(result_json.riskScoreCard.accessScore.split("/")[1])
+			let vulnScore = parseFloat(result_json.riskScoreCard.openVulnScore.split("/")[1])
+			let changeScore = parseFloat(result_json.riskScoreCard.changeSignificanceScore.split("/")[1])
+			console.log(`Total Score - ${bizScore + dataScore + accessScore + vulnScore + changeScore}`)
+		}
+
 		shell.exec(`echo ::set-output name=sastScan::${is_sast_enabled}`)
 		shell.exec(`echo ::set-output name=scaScan::${is_sca_enabled}`)
 		shell.exec(`echo ::set-output name=dastScan::${is_dast_enabled}`)
@@ -95,6 +111,11 @@ try {
 				core.error(`Error: Workflow failed and returncode is ${wfclientcode}`);
 				core.setFailed(error.message);
 			}
+
+			let rawdata = fs.readFileSync('wf-output.json');
+			let wf_output_json = JSON.parse(rawdata);
+			console.log("========================== IO WorkflowEngine Summary ============================")
+			console.log(`Breaker Status - ${wf_output_json.breaker.status}`)
 		}
 		else {
 			core.error(`Error: Workflow file generation failed and returncode is ${wffilecode}`);
@@ -119,4 +140,15 @@ function removeFile(fileName) {
 		} catch (err) {
 		}
 	}
+}
+
+
+function getPersona() {
+	let additionalWorkflowOptions = additionalWorkflowArgs.split(" ")
+	additionalWorkflowOptions.forEach((v) => {
+		let opt = v.split("=")
+		if (opt[0] === "--persona") {
+			return opt[1]
+		}
+	})
 }
