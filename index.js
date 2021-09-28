@@ -68,6 +68,8 @@ try {
 		console.log('Is SAST Enabled: '+is_sast_enabled);
 		console.log('Is SCA Enabled: '+is_sca_enabled);
 
+		console.log("personaaa",getPersona(additionalWorkflowArgs))
+		console.log("bool",getPersona(additionalWorkflowArgs) === "devsecops")
 		if (getPersona(additionalWorkflowArgs) === "devsecops") {
 		    console.log("==================================== IO Risk Score =======================================")
 			console.log(`Buisness Criticality Score - ${result_json.riskScoreCard.bizCriticalityScore}`)
