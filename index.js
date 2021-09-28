@@ -148,12 +148,12 @@ function removeFile(fileName) {
 
 function getPersona(additionalWorkflowArgs) {
 	let additionalWorkflowOptions = additionalWorkflowArgs.split(" ")
-	console.log("additionalWorkflowOptions",additionalWorkflowOptions)
-	additionalWorkflowOptions.forEach((v) => {
-		console.log("v",v)
-		let opt = v.split("=")
+	console.log("additionalWorkflowOptions", additionalWorkflowOptions)
+	for (let value of additionalWorkflowOptions) {
+		let opt = value.split("=")
 		if (opt[0] === "--persona") {
-			return opt[1]
+			console.log("opt", opt[1])
+			return opt[1];
 		}
-	})
+	}
 }
