@@ -147,7 +147,6 @@ function removeFile(fileName) {
 function getPersona(additionalWorkflowArgs) {
 	let additionalWorkflowOptions = additionalWorkflowArgs.split(" ")
 	console.log("additionalWorkflowOptions",additionalWorkflowOptions)
-	console.log("length",len(additionalWorkflowOptions))
 	additionalWorkflowOptions.forEach((v) => {
 		console.log("v",v)
 		let opt = v.split("=")
