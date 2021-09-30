@@ -69,7 +69,7 @@ try {
 
 		if (getPersona(additionalWorkflowArgs) === "devsecops") {
 		    console.log("==================================== IO Risk Score =======================================")
-			console.log(`Buisness Criticality Score - ${result_json.riskScoreCard.bizCriticalityScore}`)
+			console.log(`Business Criticality Score - ${result_json.riskScoreCard.bizCriticalityScore}`)
 			console.log(`Data Class Score - ${result_json.riskScoreCard.dataClassScore}`)
 			console.log(`Access Score - ${result_json.riskScoreCard.accessScore}`)
 			console.log(`Open Vulnerability Score - ${result_json.riskScoreCard.openVulnScore}`)
