@@ -87,7 +87,6 @@ try {
 		shell.exec(`echo ::set-output name=dastScan::${is_dast_enabled}`)
 		removeFile("synopsys-io.yml");
 		removeFile("synopsys-io.json");
-		removeFile("data.json");
 	}
 	else if (stage.toUpperCase() === "WORKFLOW")  {
 		console.log("Adding scan tool parameters")
@@ -142,11 +141,9 @@ function removeFile(fileName) {
 
 function getPersona(additionalWorkflowArgs) {
 	let additionalWorkflowOptions = additionalWorkflowArgs.split(" ")
-	console.log("additionalWorkflowOptions", additionalWorkflowOptions)
 	for (let value of additionalWorkflowOptions) {
 		let opt = value.split("=")
 		if (opt[0] === "--persona") {
-			console.log("opt", opt[1])
 			return opt[1];
 		}
 	}
