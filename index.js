@@ -59,8 +59,8 @@ try {
 		
 		let rawdata = fs.readFileSync('result.json');
 		let result_json = JSON.parse(rawdata);
-		let is_sast_enabled = result_json.security.activities.sast.enabled
-		let is_sca_enabled = result_json.security.activities.sca.enabled
+		let is_sast_enabled = ((result_json.security.activities.sast && result_json.security.activities.sast.enabled) || false);
+		let is_sca_enabled = ((result_json.security.activities.sca && result_json.security.activities.sca.enabled) || false);
 		let is_dast_enabled = ((result_json.security.activities.dast && result_json.security.activities.dast.enabled) || false);
 
 		console.log(`\n================================== IO Prescription =======================================`)
