@@ -48,7 +48,6 @@ try {
 		//removeFile("prescription.sh");
 
 		//shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
-		shell.exec(`ls -la`)
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		
@@ -56,23 +55,21 @@ try {
 		
 		if (rcode != 0){
 			core.error(`Error: Execution failed and returncode is ${rcode}`);
-			core.setFailed(error.message);
 		}
 		
 		let rawdata = fs.readFileSync('result.json');
 		let result_json = JSON.parse(rawdata);
-		let is_sast_enabled = result_json.security.activities.sast.enabled
-		let is_sca_enabled = result_json.security.activities.sca.enabled
+		let is_sast_enabled = ((result_json.security.activities.sast && result_json.security.activities.sast.enabled) || false);
+		let is_sca_enabled = ((result_json.security.activities.sca && result_json.security.activities.sca.enabled) || false);
 		let is_dast_enabled = ((result_json.security.activities.dast && result_json.security.activities.dast.enabled) || false);
-		console.log("================================== IO Prescription =======================================")
+
+		console.log(`\n================================== IO Prescription =======================================`)
 		console.log('Is SAST Enabled: '+is_sast_enabled);
 		console.log('Is SCA Enabled: '+is_sca_enabled);
 
-		console.log("personaaa",getPersona(additionalWorkflowArgs))
-		console.log("bool",getPersona(additionalWorkflowArgs) === "devsecops")
 		if (getPersona(additionalWorkflowArgs) === "devsecops") {
 		    console.log("==================================== IO Risk Score =======================================")
-			console.log(`Buisness Criticality Score - ${result_json.riskScoreCard.bizCriticalityScore}`)
+			console.log(`Business Criticality Score - ${result_json.riskScoreCard.bizCriticalityScore}`)
 			console.log(`Data Class Score - ${result_json.riskScoreCard.dataClassScore}`)
 			console.log(`Access Score - ${result_json.riskScoreCard.accessScore}`)
 			console.log(`Open Vulnerability Score - ${result_json.riskScoreCard.openVulnScore}`)
@@ -88,8 +85,8 @@ try {
 		shell.exec(`echo ::set-output name=sastScan::${is_sast_enabled}`)
 		shell.exec(`echo ::set-output name=scaScan::${is_sca_enabled}`)
 		shell.exec(`echo ::set-output name=dastScan::${is_dast_enabled}`)
-		removeFile("synopsys-io.yml");
-		removeFile("synopsys-io.json");
+	//	removeFile("synopsys-io.yml");
+	//	removeFile("synopsys-io.json");
 	}
 	else if (stage.toUpperCase() === "WORKFLOW")  {
 		console.log("Adding scan tool parameters")
@@ -112,7 +109,6 @@ try {
 			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --io.manifest.path="${configFile}"`).code;
 			if (wfclientcode != 0) {
 				core.error(`Error: Workflow failed and returncode is ${wfclientcode}`);
-				core.setFailed(error.message);
 			}
 
 			let rawdata = fs.readFileSync('wf-output.json');
@@ -122,13 +118,11 @@ try {
 		}
 		else {
 			core.error(`Error: Workflow file generation failed and returncode is ${wffilecode}`);
-			core.setFailed(error.message);
 		}
-		removeFile(configFile);
+		//removeFile(configFile);
 	}
 	else {
 		core.error(`Error: Invalid stage given as input`);
-		core.setFailed(error.message);
 	}
 }
 
@@ -145,14 +139,11 @@ function removeFile(fileName) {
 	}
 }
 
-
 function getPersona(additionalWorkflowArgs) {
 	let additionalWorkflowOptions = additionalWorkflowArgs.split(" ")
-	console.log("additionalWorkflowOptions", additionalWorkflowOptions)
 	for (let value of additionalWorkflowOptions) {
 		let opt = value.split("=")
 		if (opt[0] === "--persona") {
-			console.log("opt", opt[1])
 			return opt[1];
 		}
 	}
