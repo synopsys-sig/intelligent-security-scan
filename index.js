@@ -35,9 +35,13 @@ try {
 	if(ioServerToken === "" && ioServerUrl === "http://localhost:9090"){
 		//optionally can run ephemeral IO containers here
 		console.log("\nAuthenticating the Ephemeral IO Server");
-		shell.exec(`curl -X POST ${ioServerUrl}/io/user/signup -H "Content-Type:application/json" -d '{"userName": "user123", "password": "P@ssw0rd!", "confirmPassword":"P@ssw0rd!"}'`)
-		var ioTempToken = shell.exec(`curl -X POST ${ioServerUrl}/io/user/token -H "Content-Type:application/json" -d '{"userName": "user123", "password": "P@ssw0rd!"}'`, { silent: true }).stdout
-		ioServerToken = ioTempToken;
+		shell.exec(`curl ${ioServerUrl}/api/onboarding/onboard-requests -H "Content-Type:application/vnd.synopsys.io.onboard-request-2+json" -d '{"user":{"username": "ephemeraluser", "password": "P@ssw0rd!", "name":"ephemeraluser", "email":"user@ephemeral.com"}}'`, { silent: true });
+		shell.exec(`curl -D cookie.txt ${ioServerUrl}/api/auth/login -H "Content-Type: application/json" -d '{"loginId": "ephemeraluser","password": "P@ssw0rd!"}'`, { silent: true });
+		shell.exec(`sed -n 's/.*access_token*= *//p' cookie.txt > line.txt`);
+		let access_token = shell.exec(`sed 's/;.*//' line.txt`).stdout.trim();
+		shell.exec(`curl ${ioServerUrl}/api/auth/tokens -H "Authorization: Bearer ${access_token}" -H "Content-Type: application/json" -o output.json -d '{"name": "ephemeral-token"}'`, { silent: true })
+		ioServerToken = shell.exec(`jq -r '.token' output.json`, { silent: true }).stdout.trim();
+		removeFiles(["cookie.txt", "line.txt", "output.json"]);
 		console.log("\nEphemeral IO Server Authentication Completed");
 	}
 	
@@ -45,16 +49,17 @@ try {
 	if(stage.toUpperCase() === "IO") {
 		console.log("Triggering prescription")
 
-		removeFile("prescription.sh");
+		removeFiles(["prescription.sh"]);
 
 		shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		
-		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=false --IS_SCA_ENABLED=false --IS_DAST_ENABLED=false ${additionalWorkflowArgs}`).code;
+		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token="${ioServerToken}" --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=false --IS_SCA_ENABLED=false --IS_DAST_ENABLED=false ${additionalWorkflowArgs}`).code;
 		
 		if (rcode != 0){
 			core.error(`Error: Execution failed and returncode is ${rcode}`);
+			core.setFailed();
 		}
 		
 		let rawdata = fs.readFileSync('result.json');
@@ -85,8 +90,7 @@ try {
 		shell.exec(`echo ::set-output name=sastScan::${is_sast_enabled}`)
 		shell.exec(`echo ::set-output name=scaScan::${is_sca_enabled}`)
 		shell.exec(`echo ::set-output name=dastScan::${is_dast_enabled}`)
-		removeFile("synopsys-io.yml");
-		removeFile("synopsys-io.json");
+		removeFiles(["synopsys-io.yml", "synopsys-io.yml", "data.json"]);
 	}
 	else if (stage.toUpperCase() === "WORKFLOW")  {
 		console.log("Adding scan tool parameters")
@@ -96,7 +100,7 @@ try {
 			shell.exec(`chmod +x prescription.sh`)
 			shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		}
-		var wffilecode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token=${ioServerToken} --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --workflow.url=${workflowServerUrl} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=false --IS_SCA_ENABLED=false --IS_DAST_ENABLED=false ${additionalWorkflowArgs}`).code;
+		var wffilecode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token="${ioServerToken}" --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --workflow.url=${workflowServerUrl} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=false --IS_SCA_ENABLED=false --IS_DAST_ENABLED=false ${additionalWorkflowArgs}`).code;
 		let configFile = ""
 		if (wffilecode == 0) {
 			console.log("Workflow file generated successfullly....Calling WorkFlow Engine")
@@ -109,6 +113,7 @@ try {
 			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --io.manifest.path="${configFile}"`).code;
 			if (wfclientcode != 0) {
 				core.error(`Error: Workflow failed and returncode is ${wfclientcode}`);
+				core.setFailed();
 			}
 
 			let rawdata = fs.readFileSync('wf-output.json');
@@ -118,11 +123,13 @@ try {
 		}
 		else {
 			core.error(`Error: Workflow file generation failed and returncode is ${wffilecode}`);
+			core.setFailed();
 		}
-		removeFile(configFile);
+		removeFiles([configFile]);
 	}
 	else {
 		core.error(`Error: Invalid stage given as input`);
+		core.setFailed();
 	}
 }
 
@@ -130,11 +137,13 @@ catch (error) {
 	core.setFailed(error.message);
 }
 
-function removeFile(fileName) {
-	if (fs.existsSync(fileName)) {
-		try {
-			fs.unlinkSync(fileName);
-		} catch (err) {
+function removeFiles(fileNames) {
+	for (let file of fileNames) {
+		if (fs.existsSync(file)) {
+			try {
+				fs.unlinkSync(file);
+			} catch (err) {
+			}
 		}
 	}
 }
