@@ -11,8 +11,6 @@ const util = require('util');
 const stream = require('stream');
 
 const unzipper = require("unzipper");
-const path = require('path');
-
 
 try {
 	const ioServerUrl = core.getInput('ioServerUrl');
