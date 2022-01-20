@@ -39,5 +39,5 @@ inputs:
     default: 'yml' # This is either yml or json 
 
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'index.js'

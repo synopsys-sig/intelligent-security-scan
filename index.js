@@ -5,6 +5,11 @@ const shell = require('shelljs');
 const fs = require('fs');
 const { promisify } = require('util');
 const exec = promisify(require('child_process').exec)
+const util = require('util');
+const stream = require('stream');
+
+const unzipper = require("unzipper");
+
 
 try {
 	const ioServerUrl = core.getInput('ioServerUrl');
@@ -17,7 +22,7 @@ try {
 	var rcode = -1
 	const releaseType = core.getInput('releaseType')
 	const manifestType = core.getInput('manifestType')
-	
+
 	let scmType = "github"
 	let scmOwner = process.env.GITHUB_REPOSITORY.split('/')[0]
 	let scmRepoName = process.env.GITHUB_REPOSITORY.split('/')[1]
@@ -25,14 +30,14 @@ try {
 	let githubUsername = process.env.GITHUB_ACTOR
 	let asset_id = process.env.GITHUB_REPOSITORY
 
-	if( process.env.GITHUB_EVENT_NAME === "push" || process.env.GITHUB_EVENT_NAME === "workflow_dispatch"){
+	if (process.env.GITHUB_EVENT_NAME === "push" || process.env.GITHUB_EVENT_NAME === "workflow_dispatch") {
 		scmBranchName = process.env.GITHUB_REF.split('/')[2]
 	}
-	else if( process.env.GITHUB_EVENT_NAME === "pull_request") {
+	else if (process.env.GITHUB_EVENT_NAME === "pull_request") {
 		scmBranchName = process.env.GITHUB_HEAD_REF
 	}
-	
-	if(ioServerToken === "" && ioServerUrl === "http://localhost:9090"){
+
+	if (ioServerToken === "" && ioServerUrl === "http://localhost:9090") {
 		//optionally can run ephemeral IO containers here
 		console.log("\nAuthenticating the Ephemeral IO Server");
 		shell.exec(`curl ${ioServerUrl}/api/onboarding/onboard-requests -H "Content-Type:application/vnd.synopsys.io.onboard-request-2+json" -d '{"user":{"username": "ephemeraluser", "password": "P@ssw0rd!", "name":"ephemeraluser", "email":"user@ephemeral.com"}}'`, { silent: true });
@@ -44,36 +49,45 @@ try {
 		removeFiles(["cookie.txt", "line.txt", "output.json"]);
 		console.log("\nEphemeral IO Server Authentication Completed");
 	}
-	
+
 	// Irrespective of Machine this should be invoked
-	if(stage.toUpperCase() === "IO") {
+	if (stage.toUpperCase() === "IO") {
 		console.log("Triggering prescription")
 
-		removeFiles(["prescription.sh"]);
+		removeFiles(["io_state.json", "io_client-0.1.487.zip"]);
 
-		shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
-		shell.exec(`chmod +x prescription.sh`)
-		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
-		
-		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token="${ioServerToken}" --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=false --IS_SCA_ENABLED=false --IS_DAST_ENABLED=false ${additionalWorkflowArgs}`).code;
-		
-		if (rcode != 0){
-			core.error(`Error: Execution failed and returncode is ${rcode}`);
+		shell.exec(`wget http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/io_client/0.1.487/io_client-0.1.487.zip`)
+
+		const pipeline = util.promisify(stream.pipeline);
+
+		async function unzip() {
+			await pipeline(
+				fs.createReadStream('io_client-0.1.487.zip'),
+				unzipper.Extract({ path: './' })
+			);
+			shell.exec(`chmod +x io_client-0.1.487/${getOSType()}/bin/io`)
+		}
+
+		unzip().catch(console.error)
+
+		let rcode = shell.exec(`io_client-0.1.487/${getOSType()}/bin/io --stage io Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
+		if (rcode.code != 0) {
+			core.error(`Error: Execution failed and returncode is ${rcode.code}`);
 			core.setFailed();
 		}
-		
-		let rawdata = fs.readFileSync('result.json');
+
+		let rawdata = fs.readFileSync('io_state.json');
 		let result_json = JSON.parse(rawdata);
-		let is_sast_enabled = ((result_json.security.activities.sast && result_json.security.activities.sast.enabled) || false);
-		let is_sca_enabled = ((result_json.security.activities.sca && result_json.security.activities.sca.enabled) || false);
-		let is_dast_enabled = ((result_json.security.activities.dast && result_json.security.activities.dast.enabled) || false);
+		let is_sast_enabled = ((result_json.security && result_json.security.activities && result_json.security.activities.sast && result_json.security.activities.sast.enabled) || false);
+		let is_sca_enabled = ((result_json.security && result_json.security.activities && result_json.security.activities.sca && result_json.security.activities.sca.enabled) || false);
+		let is_dast_enabled = ((result_json.security && result_json.security.activities && result_json.security.activities.dast && result_json.security.activities.dast.enabled) || false);
 
 		console.log(`\n================================== IO Prescription =======================================`)
-		console.log('Is SAST Enabled: '+is_sast_enabled);
-		console.log('Is SCA Enabled: '+is_sca_enabled);
+		console.log('Is SAST Enabled: ' + is_sast_enabled);
+		console.log('Is SCA Enabled: ' + is_sca_enabled);
 
 		if (getPersona(additionalWorkflowArgs) === "devsecops") {
-		    console.log("==================================== IO Risk Score =======================================")
+			console.log("==================================== IO Risk Score =======================================")
 			console.log(`Business Criticality Score - ${result_json.riskScoreCard.bizCriticalityScore}`)
 			console.log(`Data Class Score - ${result_json.riskScoreCard.dataClassScore}`)
 			console.log(`Access Score - ${result_json.riskScoreCard.accessScore}`)
@@ -92,7 +106,7 @@ try {
 		shell.exec(`echo ::set-output name=dastScan::${is_dast_enabled}`)
 		removeFiles(["synopsys-io.yml", "synopsys-io.yml", "data.json"]);
 	}
-	else if (stage.toUpperCase() === "WORKFLOW")  {
+	else if (stage.toUpperCase() === "WORKFLOW") {
 		console.log("Adding scan tool parameters")
 		// file doesn't exist
 		if (!fs.existsSync("prescription.sh")) {
@@ -104,10 +118,10 @@ try {
 		let configFile = ""
 		if (wffilecode == 0) {
 			console.log("Workflow file generated successfullly....Calling WorkFlow Engine")
-			if(manifestType === "yml"){
+			if (manifestType === "yml") {
 				configFile = "synopsys-io.yml"
 			}
-			else if(manifestType === "json"){
+			else if (manifestType === "json") {
 				configFile = "synopsys-io.json"
 			}
 			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --io.manifest.path="${configFile}"`).code;
@@ -152,8 +166,21 @@ function getPersona(additionalWorkflowArgs) {
 	let additionalWorkflowOptions = additionalWorkflowArgs.split(" ")
 	for (let value of additionalWorkflowOptions) {
 		let opt = value.split("=")
-		if (opt[0] === "--persona") {
+		if (opt[0] === "Persona.Type") {
 			return opt[1];
 		}
+	}
+}
+
+function getOSType() {
+	switch (os.platform()) {
+		case "darwin":
+			return "macosx"
+		case "linux":
+			return "linux64"
+		case "win64":
+			return "win64"
+		default:
+			return "linux64"
 	}
 }
