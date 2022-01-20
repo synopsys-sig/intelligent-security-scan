@@ -76,7 +76,7 @@ async function IO() {
 
 			let rcode = shell.exec(`${ioBinary} --stage io Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
 			if (rcode.code != 0) {
-				core.error(`Error: Execution failed and returncode is ${rcode.code}`);
+				core.error(`Error: IO Client returned non-zero exit code ${rcode.code} for IO stage`);
 				core.setFailed();
 			}
 
@@ -108,11 +108,16 @@ async function IO() {
 			shell.exec(`echo ::set-output name=sastScan::${is_sast_enabled}`)
 			shell.exec(`echo ::set-output name=scaScan::${is_sca_enabled}`)
 			shell.exec(`echo ::set-output name=dastScan::${is_dast_enabled}`)
-			removeFiles(["synopsys-io.yml", "synopsys-io.yml", "data.json"]);
+			removeFiles(["synopsys-io.yml", "synopsys-io.json", "data.json"]);
 		}
 		else if (stage.toUpperCase() === "WORKFLOW") {
 			console.log("Adding scan tool parameters")
 			let ioBinary = path.join("io_client-0.1.487", getOSType(), "bin", "io")
+			if (!fs.existsSync("io_state.json")) {
+				core.error(`Error: Workflow stage cannot be run due to non-availability of prescription`);
+				core.setFailed();
+			}
+
 			if (!fs.existsSync("io_client-0.1.487")) {
 				const pipeline = util.promisify(stream.pipeline);
 
@@ -123,25 +128,24 @@ async function IO() {
 					);
 				}
 
-				await unzip().catch(console.error);				
+				await unzip().catch(console.error);
 				shell.exec(`chmod +x ${ioBinary}`)
 			}
 
-			let wffilecode = shell.exec(`${ioBinary} --stage workflow Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Workflow.Engine.Version=${workflowVersion} Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
+			let wffilecode = shell.exec(`${ioBinary} --stage workflow --state io_state.json Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Workflow.Engine.Version=${workflowVersion} Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
 
-			if (wffilecode == 0) {
+			if (wffilecode.code == 0) {
 				let rawdata = fs.readFileSync('wf-output.json');
 				let wf_output_json = JSON.parse(rawdata);
 				console.log("========================== IO WorkflowEngine Summary ============================")
 				console.log(`Breaker Status - ${wf_output_json.breaker.status}`)
-			}
-			else {
-				core.error(`Error: Workflow file generation failed and returncode is ${wffilecode}`);
+			} else {
+				core.error(`Error: IO Client returned non-zero exit code ${wffilecode.code} for workflow stage`);
 				core.setFailed();
 			}
-			removeFiles([configFile]);
-		}
-		else {
+
+			removeFiles(["synopsys-io.yml", "synopsys-io.json", "data.json", "io_state.json"]);
+		} else {
 			core.error(`Error: Invalid stage given as input`);
 			core.setFailed();
 		}
