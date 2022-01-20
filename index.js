@@ -3,6 +3,7 @@
 const core = require('@actions/core');
 const shell = require('shelljs');
 const fs = require('fs');
+const os = require('os');
 const { promisify } = require('util');
 const exec = promisify(require('child_process').exec)
 const util = require('util');
