@@ -82,6 +82,7 @@ async function IO() {
 
 			let rawdata = fs.readFileSync('io_state.json');
 			let result_json = JSON.parse(rawdata);
+			console.log(result_json)
 			let is_sast_enabled = ((result_json.security && result_json.security.activities && result_json.security.activities.sast && result_json.security.activities.sast.enabled) || false);
 			let is_sca_enabled = ((result_json.security && result_json.security.activities && result_json.security.activities.sca && result_json.security.activities.sca.enabled) || false);
 			let is_dast_enabled = ((result_json.security && result_json.security.activities && result_json.security.activities.dast && result_json.security.activities.dast.enabled) || false);
@@ -131,7 +132,7 @@ async function IO() {
 				await unzip().catch(console.error);
 				shell.exec(`chmod +x ${ioBinary}`)
 			}
-
+			shell.exec(`cat io_state.json`)
 			let wffilecode = shell.exec(`${ioBinary} --stage workflow --state io_state.json Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Workflow.Engine.Version=${workflowVersion} Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
 			shell.exec(`ls`)
 			if (wffilecode.code == 0) {
