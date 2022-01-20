@@ -4,12 +4,14 @@ const core = require('@actions/core');
 const shell = require('shelljs');
 const fs = require('fs');
 const os = require('os');
+const path = require('path');
 const { promisify } = require('util');
 const exec = promisify(require('child_process').exec)
 const util = require('util');
 const stream = require('stream');
 
 const unzipper = require("unzipper");
+const path = require('path');
 
 
 try {
@@ -68,12 +70,16 @@ try {
 			);
 		}
 
-		unzip().catch(console.error)
+		unzip().catch((err) => {
+			core.error(`Error: Unzip failed`);
+			core.setFailed();
+		});
 
 		shell.exec(`ls`);
-		shell.exec(`chmod +x io_client-0.1.487/${getOSType()}/bin/io`)
+		let ioBinary = path.join("io_client-0.1.487", getOSType(), "bin", "io")
+		shell.exec(`chmod +x ${ioBinary}`)
 
-		let rcode = shell.exec(`io_client-0.1.487/${getOSType()}/bin/io --stage io Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
+		let rcode = shell.exec(`${ioBinary} --stage io Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
 		if (rcode.code != 0) {
 			core.error(`Error: Execution failed and returncode is ${rcode.code}`);
 			core.setFailed();
