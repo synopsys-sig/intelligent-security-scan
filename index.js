@@ -66,10 +66,12 @@ try {
 				fs.createReadStream('io_client-0.1.487.zip'),
 				unzipper.Extract({ path: './' })
 			);
-			shell.exec(`chmod +x io_client-0.1.487/${getOSType()}/bin/io`)
 		}
 
 		unzip().catch(console.error)
+
+		shell.exec(`ls`);
+		shell.exec(`chmod +x io_client-0.1.487/${getOSType()}/bin/io`)
 
 		let rcode = shell.exec(`io_client-0.1.487/${getOSType()}/bin/io --stage io Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
 		if (rcode.code != 0) {
