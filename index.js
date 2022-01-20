@@ -56,7 +56,7 @@ async function IO() {
 		if (stage.toUpperCase() === "IO") {
 			console.log("Triggering prescription")
 
-			removeFiles(["io_state.json", "io_client-0.1.487.zip"]);
+			removeFiles(["io_state.Data.Prescription.json", "io_client-0.1.487.zip"]);
 
 			shell.exec(`wget http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/io_client/0.1.487/io_client-0.1.487.zip`)
 
@@ -80,12 +80,11 @@ async function IO() {
 				core.setFailed();
 			}
 
-			let rawdata = fs.readFileSync('io_state.json');
-			let result_json = JSON.parse(rawdata);
-			console.log(result_json)
-			let is_sast_enabled = ((result_json.security && result_json.security.activities && result_json.security.activities.sast && result_json.security.activities.sast.enabled) || false);
-			let is_sca_enabled = ((result_json.security && result_json.security.activities && result_json.security.activities.sca && result_json.security.activities.sca.enabled) || false);
-			let is_dast_enabled = ((result_json.security && result_json.security.activities && result_json.security.activities.dast && result_json.security.activities.dast.enabled) || false);
+			let rawdata = fs.readFileSync('io_state.Data.Prescription.json');
+			let state = JSON.parse(rawdata);
+			let is_sast_enabled = ((state.Data && state.Data.Prescription && state.Data.Prescription.Security && state.Data.Prescription.Security.Activities && state.Data.Prescription.Security.Activities.Sast && state.Data.Prescription.Security.Activities.Sast.Enabled) || false);
+			let is_sca_enabled = ((state.Data && state.Data.Prescription && state.Data.Prescription.Security && state.Data.Prescription.Security.Activities && state.Data.Prescription.Security.Activities.Sca && state.Data.Prescription.Security.Activities.Sca.Enabled) || false);
+			let is_dast_enabled = ((state.Data && state.Data.Prescription && state.Data.Prescription.Security && state.Data.Prescription.Security.Activities && state.Data.Prescription.Security.Activities.Dast && state.Data.Prescription.Security.Activities.Dast.Enabled) || false);
 
 			console.log(`\n================================== IO Prescription =======================================`)
 			console.log('Is SAST Enabled: ' + is_sast_enabled);
@@ -93,16 +92,16 @@ async function IO() {
 
 			if (getPersona(additionalWorkflowArgs) === "devsecops") {
 				console.log("==================================== IO Risk Score =======================================")
-				console.log(`Business Criticality Score - ${result_json.riskScoreCard.bizCriticalityScore}`)
-				console.log(`Data Class Score - ${result_json.riskScoreCard.dataClassScore}`)
-				console.log(`Access Score - ${result_json.riskScoreCard.accessScore}`)
-				console.log(`Open Vulnerability Score - ${result_json.riskScoreCard.openVulnScore}`)
-				console.log(`Change Significance Score - ${result_json.riskScoreCard.changeSignificanceScore}`)
-				let bizScore = parseFloat(result_json.riskScoreCard.bizCriticalityScore.split("/")[1])
-				let dataScore = parseFloat(result_json.riskScoreCard.dataClassScore.split("/")[1])
-				let accessScore = parseFloat(result_json.riskScoreCard.accessScore.split("/")[1])
-				let vulnScore = parseFloat(result_json.riskScoreCard.openVulnScore.split("/")[1])
-				let changeScore = parseFloat(result_json.riskScoreCard.changeSignificanceScore.split("/")[1])
+				console.log(`Business Criticality Score - ${state.Data.Prescription.RiskScore.BusinessCriticalityScore}`)
+				console.log(`Data Class Score - ${state.Data.Prescription.RiskScore.DataClassScore}`)
+				console.log(`Access Score - ${state.Data.Prescription.RiskScore.AccessScore}`)
+				console.log(`Open Vulnerability Score - ${state.Data.Prescription.RiskScore.OpenVulnerabilityScore}`)
+				console.log(`Change Significance Score - ${state.Data.Prescription.RiskScore.ChangeSignificanceScore}`)
+				let bizScore = parseFloat(state.Data.Prescription.RiskScore.BusinessCriticalityScore.split("/")[1])
+				let dataScore = parseFloat(state.Data.Prescription.RiskScore.DataClassScore.split("/")[1])
+				let accessScore = parseFloat(state.Data.Prescription.RiskScore.AccessScore.split("/")[1])
+				let vulnScore = parseFloat(state.Data.Prescription.RiskScore.OpenVulnerabilityScore.split("/")[1])
+				let changeScore = parseFloat(state.Data.Prescription.RiskScore.ChangeSignificanceScore.split("/")[1])
 				console.log(`Total Score - ${bizScore + dataScore + accessScore + vulnScore + changeScore}`)
 			}
 
@@ -113,7 +112,7 @@ async function IO() {
 		} else if (stage.toUpperCase() === "WORKFLOW") {
 			console.log("Adding scan tool parameters")
 			let ioBinary = path.join("io_client-0.1.487", getOSType(), "bin", "io")
-			if (!fs.existsSync("io_state.json")) {
+			if (!fs.existsSync("io_state.Data.Prescription.json")) {
 				core.error(`Error: Workflow stage cannot be run due to non-availability of prescription`);
 				core.setFailed();
 			}
@@ -132,8 +131,8 @@ async function IO() {
 				await unzip().catch(console.error);
 				shell.exec(`chmod +x ${ioBinary}`)
 			}
-			shell.exec(`cat io_state.json`)
-			let wffilecode = shell.exec(`${ioBinary} --stage workflow --state io_state.json Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Workflow.Engine.Version=${workflowVersion} Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
+			shell.exec(`cat io_state.Data.Prescription.json`)
+			let wffilecode = shell.exec(`${ioBinary} --stage workflow --state io_state.Data.Prescription.json Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Workflow.Engine.Version=${workflowVersion} Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
 			shell.exec(`ls`)
 			if (wffilecode.code == 0) {
 				let rawdata = fs.readFileSync('wf-output.json');
@@ -145,7 +144,7 @@ async function IO() {
 				core.setFailed();
 			}
 
-			//removeFiles(["synopsys-io.yml", "synopsys-io.json", "data.json", "io_state.json"]);
+			//removeFiles(["synopsys-io.yml", "synopsys-io.json", "data.json", "io_state.Data.Prescription.json"]);
 		} else {
 			core.error(`Error: Invalid stage given as input`);
 			core.setFailed();
