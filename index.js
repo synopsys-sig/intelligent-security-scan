@@ -56,7 +56,7 @@ async function IO() {
 		if (stage.toUpperCase() === "IO") {
 			console.log("Triggering prescription")
 
-			removeFiles(["io_state.Data.Prescription.json", "io_client-0.1.487.zip"]);
+			removeFiles(["io_state.json", "io_client-0.1.487.zip"]);
 
 			shell.exec(`wget http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/io_client/0.1.487/io_client-0.1.487.zip`)
 
@@ -80,7 +80,7 @@ async function IO() {
 				core.setFailed();
 			}
 
-			let rawdata = fs.readFileSync('io_state.Data.Prescription.json');
+			let rawdata = fs.readFileSync('io_state.json');
 			let state = JSON.parse(rawdata);
 			let is_sast_enabled = ((state.Data && state.Data.Prescription && state.Data.Prescription.Security && state.Data.Prescription.Security.Activities && state.Data.Prescription.Security.Activities.Sast && state.Data.Prescription.Security.Activities.Sast.Enabled) || false);
 			let is_sca_enabled = ((state.Data && state.Data.Prescription && state.Data.Prescription.Security && state.Data.Prescription.Security.Activities && state.Data.Prescription.Security.Activities.Sca && state.Data.Prescription.Security.Activities.Sca.Enabled) || false);
@@ -112,7 +112,7 @@ async function IO() {
 		} else if (stage.toUpperCase() === "WORKFLOW") {
 			console.log("Adding scan tool parameters")
 			let ioBinary = path.join("io_client-0.1.487", getOSType(), "bin", "io")
-			if (!fs.existsSync("io_state.Data.Prescription.json")) {
+			if (!fs.existsSync("io_state.json")) {
 				core.error(`Error: Workflow stage cannot be run due to non-availability of prescription`);
 				core.setFailed();
 			}
@@ -131,8 +131,8 @@ async function IO() {
 				await unzip().catch(console.error);
 				shell.exec(`chmod +x ${ioBinary}`)
 			}
-			shell.exec(`cat io_state.Data.Prescription.json`)
-			let wffilecode = shell.exec(`${ioBinary} --stage workflow --state io_state.Data.Prescription.json Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Workflow.Engine.Version=${workflowVersion} Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
+			shell.exec(`cat io_state.json`)
+			let wffilecode = shell.exec(`${ioBinary} --stage workflow --state io_state.json Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Workflow.Engine.Version=${workflowVersion} Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
 			shell.exec(`ls`)
 			if (wffilecode.code == 0) {
 				let rawdata = fs.readFileSync('wf-output.json');
@@ -144,7 +144,7 @@ async function IO() {
 				core.setFailed();
 			}
 
-			//removeFiles(["synopsys-io.yml", "synopsys-io.json", "data.json", "io_state.Data.Prescription.json"]);
+			//removeFiles(["synopsys-io.yml", "synopsys-io.json", "data.json", "io_state.json"]);
 		} else {
 			core.error(`Error: Invalid stage given as input`);
 			core.setFailed();
