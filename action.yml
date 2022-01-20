@@ -18,10 +18,6 @@ inputs:
   ioManifestUrl:
     description: 'HTTP URL to download IO Manifest file synopsys-io.yml'
     required: false
-  workflowServerUrl:
-    description: 'The server Host URL for Intelligent Scan Workflow Engine eg http://localhost:1111 or https://21b7.ngrok.io'
-    required: true
-    default: 'http://localhost:9091'
   workflowVersion:
     description: 'The workflow jar version to retrieve for Intelligent Scan Engine'
     required: false
@@ -32,11 +28,7 @@ inputs:
   stage:
     description: 'Additional arguments required for workflow engine arguments'
     required: true
-    default: 'IO' # This is either IO or WORKFLOW 
-  manifestType:
-    description: 'Type of Manifest file for IO'
-    required: false
-    default: 'yml' # This is either yml or json 
+    default: 'IO' # This is either IO or WORKFLOW
 
 runs:
   using: 'node16'

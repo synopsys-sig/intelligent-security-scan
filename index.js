@@ -109,8 +109,7 @@ async function IO() {
 			shell.exec(`echo ::set-output name=scaScan::${is_sca_enabled}`)
 			shell.exec(`echo ::set-output name=dastScan::${is_dast_enabled}`)
 			removeFiles(["synopsys-io.yml", "synopsys-io.json", "data.json"]);
-		}
-		else if (stage.toUpperCase() === "WORKFLOW") {
+		} else if (stage.toUpperCase() === "WORKFLOW") {
 			console.log("Adding scan tool parameters")
 			let ioBinary = path.join("io_client-0.1.487", getOSType(), "bin", "io")
 			if (!fs.existsSync("io_state.json")) {
@@ -119,6 +118,7 @@ async function IO() {
 			}
 
 			if (!fs.existsSync("io_client-0.1.487")) {
+				shell.exec(`wget http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/io_client/0.1.487/io_client-0.1.487.zip`)
 				const pipeline = util.promisify(stream.pipeline);
 
 				async function unzip() {
@@ -133,7 +133,7 @@ async function IO() {
 			}
 
 			let wffilecode = shell.exec(`${ioBinary} --stage workflow --state io_state.json Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Workflow.Engine.Version=${workflowVersion} Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
-
+			shell.exec(`ls`)
 			if (wffilecode.code == 0) {
 				let rawdata = fs.readFileSync('wf-output.json');
 				let wf_output_json = JSON.parse(rawdata);
@@ -144,7 +144,7 @@ async function IO() {
 				core.setFailed();
 			}
 
-			removeFiles(["synopsys-io.yml", "synopsys-io.json", "data.json", "io_state.json"]);
+			//removeFiles(["synopsys-io.yml", "synopsys-io.json", "data.json", "io_state.json"]);
 		} else {
 			core.error(`Error: Invalid stage given as input`);
 			core.setFailed();
