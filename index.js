@@ -71,7 +71,6 @@ async function IO() {
 
 			await unzip().catch(console.error);
 
-			shell.exec(`ls`);
 			let ioBinary = path.join("io_client-0.1.487", getOSType(), "bin", "io")
 			shell.exec(`chmod +x ${ioBinary}`)
 
@@ -113,28 +112,24 @@ async function IO() {
 		}
 		else if (stage.toUpperCase() === "WORKFLOW") {
 			console.log("Adding scan tool parameters")
-			// file doesn't exist
-			if (!fs.existsSync("prescription.sh")) {
-				shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
-				shell.exec(`chmod +x prescription.sh`)
-				shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
-			}
-			var wffilecode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token="${ioServerToken}" --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --workflow.url=${workflowServerUrl} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=false --IS_SCA_ENABLED=false --IS_DAST_ENABLED=false ${additionalWorkflowArgs}`).code;
-			let configFile = ""
-			if (wffilecode == 0) {
-				console.log("Workflow file generated successfullly....Calling WorkFlow Engine")
-				if (manifestType === "yml") {
-					configFile = "synopsys-io.yml"
-				}
-				else if (manifestType === "json") {
-					configFile = "synopsys-io.json"
-				}
-				var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --io.manifest.path="${configFile}"`).code;
-				if (wfclientcode != 0) {
-					core.error(`Error: Workflow failed and returncode is ${wfclientcode}`);
-					core.setFailed();
+			let ioBinary = path.join("io_client-0.1.487", getOSType(), "bin", "io")
+			if (!fs.existsSync("io_client-0.1.487")) {
+				const pipeline = util.promisify(stream.pipeline);
+
+				async function unzip() {
+					await pipeline(
+						fs.createReadStream('io_client-0.1.487.zip'),
+						unzipper.Extract({ path: './' })
+					);
 				}
 
+				await unzip().catch(console.error);				
+				shell.exec(`chmod +x ${ioBinary}`)
+			}
+
+			let wffilecode = shell.exec(`${ioBinary} --stage workflow Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Workflow.Engine.Version=${workflowVersion} Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
+
+			if (wffilecode == 0) {
 				let rawdata = fs.readFileSync('wf-output.json');
 				let wf_output_json = JSON.parse(rawdata);
 				console.log("========================== IO WorkflowEngine Summary ============================")
