@@ -6,8 +6,6 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { promisify } = require('util');
-const exec = promisify(require('child_process').exec)
-const util = require('util');
 const stream = require('stream');
 
 const unzipper = require("unzipper");
@@ -30,7 +28,6 @@ async function IO() {
 		let scmRepoName = process.env.GITHUB_REPOSITORY.split('/')[1]
 		let scmBranchName = ""
 		let githubUsername = process.env.GITHUB_ACTOR
-		let asset_id = process.env.GITHUB_REPOSITORY
 
 		if (process.env.GITHUB_EVENT_NAME === "push" || process.env.GITHUB_EVENT_NAME === "workflow_dispatch") {
 			scmBranchName = process.env.GITHUB_REF.split('/')[2]
@@ -56,20 +53,23 @@ async function IO() {
 		if (stage.toUpperCase() === "IO") {
 			console.log("Triggering prescription")
 
-			removeFiles(["io_state.json", "io_client-0.1.487.zip"]);
+			removeFiles(["io_state.json"]);
 
-			shell.exec(`wget http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/io_client/0.1.487/io_client-0.1.487.zip`)
+			if (!fs.existsSync("io_client-0.1.487")) {
 
-			const pipeline = util.promisify(stream.pipeline);
+				shell.exec(`wget http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/io_client/0.1.487/io_client-0.1.487.zip`)
 
-			async function unzip() {
-				await pipeline(
-					fs.createReadStream('io_client-0.1.487.zip'),
-					unzipper.Extract({ path: './' })
-				);
+				const pipeline = promisify(stream.pipeline);
+
+				async function unzip() {
+					await pipeline(
+						fs.createReadStream('io_client-0.1.487.zip'),
+						unzipper.Extract({ path: './' })
+					);
+				}
+
+				await unzip().catch(console.error);
 			}
-
-			await unzip().catch(console.error);
 
 			let ioBinary = path.join("io_client-0.1.487", getOSType(), "bin", "io")
 			shell.exec(`chmod +x ${ioBinary}`)
@@ -108,7 +108,7 @@ async function IO() {
 			shell.exec(`echo ::set-output name=sastScan::${is_sast_enabled}`)
 			shell.exec(`echo ::set-output name=scaScan::${is_sca_enabled}`)
 			shell.exec(`echo ::set-output name=dastScan::${is_dast_enabled}`)
-			removeFiles(["synopsys-io.yml", "synopsys-io.json", "data.json"]);
+			removeFiles(["synopsys-io.yml", "synopsys-io.json"]);
 		} else if (stage.toUpperCase() === "WORKFLOW") {
 			console.log("Adding scan tool parameters")
 			let ioBinary = path.join("io_client-0.1.487", getOSType(), "bin", "io")
@@ -119,7 +119,7 @@ async function IO() {
 
 			if (!fs.existsSync("io_client-0.1.487")) {
 				shell.exec(`wget http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/io_client/0.1.487/io_client-0.1.487.zip`)
-				const pipeline = util.promisify(stream.pipeline);
+				const pipeline = promisify(stream.pipeline);
 
 				async function unzip() {
 					await pipeline(
@@ -131,9 +131,9 @@ async function IO() {
 				await unzip().catch(console.error);
 				shell.exec(`chmod +x ${ioBinary}`)
 			}
-			shell.exec(`cat io_state.json`)
+
 			let wffilecode = shell.exec(`${ioBinary} --stage workflow --state io_state.json Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Workflow.Engine.Version=${workflowVersion} Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
-			shell.exec(`ls`)
+
 			if (wffilecode.code == 0) {
 				let rawdata = fs.readFileSync('wf-output.json');
 				let wf_output_json = JSON.parse(rawdata);
@@ -152,10 +152,13 @@ async function IO() {
 	} catch (error) {
 		core.setFailed(error.message);
 	}
-
 }
 
 IO().catch(console.error)
+
+function parsePrescription(state) {
+
+}
 
 function removeFiles(fileNames) {
 	for (let file of fileNames) {
