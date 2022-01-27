@@ -74,7 +74,7 @@ async function IO() {
 			let ioBinary = path.join("io_client-0.1.487", getOSType(), "bin", "io")
 			shell.exec(`chmod +x ${ioBinary}`)
 
-			let rcode = shell.exec(`${ioBinary} --stage io Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
+			let rcode = shell.exec(`${ioBinary} --stage io Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${ioClientArgs}`);
 			if (rcode.code != 0) {
 				core.error(`Error: IO Client returned non-zero exit code ${rcode.code} for IO stage`);
 				core.setFailed();
@@ -82,9 +82,10 @@ async function IO() {
 
 			let rawdata = fs.readFileSync('io_state.json');
 			let state = JSON.parse(rawdata);
-			let is_sast_enabled = ((state.Data && state.Data.Prescription && state.Data.Prescription.Security && state.Data.Prescription.Security.Activities && state.Data.Prescription.Security.Activities.Sast && state.Data.Prescription.Security.Activities.Sast.Enabled) || false);
-			let is_sca_enabled = ((state.Data && state.Data.Prescription && state.Data.Prescription.Security && state.Data.Prescription.Security.Activities && state.Data.Prescription.Security.Activities.Sca && state.Data.Prescription.Security.Activities.Sca.Enabled) || false);
-			let is_dast_enabled = ((state.Data && state.Data.Prescription && state.Data.Prescription.Security && state.Data.Prescription.Security.Activities && state.Data.Prescription.Security.Activities.Dast && state.Data.Prescription.Security.Activities.Dast.Enabled) || false);
+			let activities = state.Data && state.Data.Prescription && state.Data.Prescription.Security && state.Data.Prescription.Security.Activities
+			let is_sast_enabled = ((activities && activities.Sast && activities.Sast.Enabled) || false);
+			let is_sca_enabled = ((activities && activities.Sca && activities.Sca.Enabled) || false);
+			let is_dast_enabled = ((activities && activities.Dast && activities.Dast.Enabled) || false);
 
 			console.log(`\n================================== IO Prescription =======================================`)
 			console.log('Is SAST Enabled: ' + is_sast_enabled);
@@ -92,16 +93,17 @@ async function IO() {
 
 			if (getPersona(additionalWorkflowArgs) === "devsecops") {
 				console.log("==================================== IO Risk Score =======================================")
-				console.log(`Business Criticality Score - ${state.Data.Prescription.RiskScore.BusinessCriticalityScore}`)
-				console.log(`Data Class Score - ${state.Data.Prescription.RiskScore.DataClassScore}`)
-				console.log(`Access Score - ${state.Data.Prescription.RiskScore.AccessScore}`)
-				console.log(`Open Vulnerability Score - ${state.Data.Prescription.RiskScore.OpenVulnerabilityScore}`)
-				console.log(`Change Significance Score - ${state.Data.Prescription.RiskScore.ChangeSignificanceScore}`)
-				let bizScore = parseFloat(state.Data.Prescription.RiskScore.BusinessCriticalityScore.split("/")[1])
-				let dataScore = parseFloat(state.Data.Prescription.RiskScore.DataClassScore.split("/")[1])
-				let accessScore = parseFloat(state.Data.Prescription.RiskScore.AccessScore.split("/")[1])
-				let vulnScore = parseFloat(state.Data.Prescription.RiskScore.OpenVulnerabilityScore.split("/")[1])
-				let changeScore = parseFloat(state.Data.Prescription.RiskScore.ChangeSignificanceScore.split("/")[1])
+				let riskScore = state.Data.Prescription && state.Data.Prescription.RiskScore
+				console.log(`Business Criticality Score - ${riskScore.BusinessCriticalityScore}`)
+				console.log(`Data Class Score - ${riskScore.DataClassScore}`)
+				console.log(`Access Score - ${riskScore.AccessScore}`)
+				console.log(`Open Vulnerability Score - ${riskScore.OpenVulnerabilityScore}`)
+				console.log(`Change Significance Score - ${riskScore.ChangeSignificanceScore}`)
+				let bizScore = parseFloat(riskScore.BusinessCriticalityScore.split("/")[1])
+				let dataScore = parseFloat(riskScore.DataClassScore.split("/")[1])
+				let accessScore = parseFloat(riskScore.AccessScore.split("/")[1])
+				let vulnScore = parseFloat(riskScore.OpenVulnerabilityScore.split("/")[1])
+				let changeScore = parseFloat(riskScore.ChangeSignificanceScore.split("/")[1])
 				console.log(`Total Score - ${bizScore + dataScore + accessScore + vulnScore + changeScore}`)
 			}
 
@@ -132,7 +134,7 @@ async function IO() {
 				shell.exec(`chmod +x ${ioBinary}`)
 			}
 
-			let wffilecode = shell.exec(`${ioBinary} --stage workflow --state io_state.json Io.Server.Url=${ioServerUrl} Io.Server.Token="${ioServerToken}" Workflow.Engine.Version=${workflowVersion} Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${additionalWorkflowArgs}`);
+			let wffilecode = shell.exec(`${ioBinary} --stage workflow --state io_state.json Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${ioClientArgs}`);
 
 			if (wffilecode.code == 0) {
 				let rawdata = fs.readFileSync('wf-output.json');
@@ -144,7 +146,7 @@ async function IO() {
 				core.setFailed();
 			}
 
-			//removeFiles(["synopsys-io.yml", "synopsys-io.json", "data.json", "io_state.json"]);
+			removeFiles(["synopsys-io.yml", "synopsys-io.json", "data.json", "io_state.json"]);
 		} else {
 			core.error(`Error: Invalid stage given as input`);
 			core.setFailed();
@@ -155,10 +157,6 @@ async function IO() {
 }
 
 IO().catch(console.error)
-
-function parsePrescription(state) {
-
-}
 
 function removeFiles(fileNames) {
 	for (let file of fileNames) {
