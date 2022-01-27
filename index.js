@@ -12,16 +12,9 @@ const unzipper = require("unzipper");
 
 async function IO() {
 	try {
-		const ioServerUrl = core.getInput('ioServerUrl');
-		var ioServerToken = core.getInput('ioServerToken');
-		const workflowServerUrl = core.getInput('workflowServerUrl');
-		const workflowVersion = core.getInput('workflowVersion');
-		const ioManifestUrl = core.getInput('ioManifestUrl');
-		const additionalWorkflowArgs = core.getInput('additionalWorkflowArgs')
+		const ioClientArgs = core.getInput('ioClientArgs')
 		const stage = core.getInput('stage')
 		var rcode = -1
-		const releaseType = core.getInput('releaseType')
-		const manifestType = core.getInput('manifestType')
 
 		let scmType = "github"
 		let scmOwner = process.env.GITHUB_REPOSITORY.split('/')[0]
@@ -34,19 +27,6 @@ async function IO() {
 		}
 		else if (process.env.GITHUB_EVENT_NAME === "pull_request") {
 			scmBranchName = process.env.GITHUB_HEAD_REF
-		}
-
-		if (ioServerToken === "" && ioServerUrl === "http://localhost:9090") {
-			//optionally can run ephemeral IO containers here
-			console.log("\nAuthenticating the Ephemeral IO Server");
-			shell.exec(`curl ${ioServerUrl}/api/onboarding/onboard-requests -H "Content-Type:application/vnd.synopsys.io.onboard-request-2+json" -d '{"user":{"username": "ephemeraluser", "password": "P@ssw0rd!", "name":"ephemeraluser", "email":"user@ephemeral.com"}}'`, { silent: true });
-			shell.exec(`curl -D cookie.txt ${ioServerUrl}/api/auth/login -H "Content-Type: application/json" -d '{"loginId": "ephemeraluser","password": "P@ssw0rd!"}'`, { silent: true });
-			shell.exec(`sed -n 's/.*access_token*= *//p' cookie.txt > line.txt`);
-			let access_token = shell.exec(`sed 's/;.*//' line.txt`).stdout.trim();
-			shell.exec(`curl ${ioServerUrl}/api/auth/tokens -H "Authorization: Bearer ${access_token}" -H "Content-Type: application/json" -o output.json -d '{"name": "ephemeral-token"}'`, { silent: true })
-			ioServerToken = shell.exec(`jq -r '.token' output.json`, { silent: true }).stdout.trim();
-			removeFiles(["cookie.txt", "line.txt", "output.json"]);
-			console.log("\nEphemeral IO Server Authentication Completed");
 		}
 
 		// Irrespective of Machine this should be invoked
@@ -91,7 +71,7 @@ async function IO() {
 			console.log('Is SAST Enabled: ' + is_sast_enabled);
 			console.log('Is SCA Enabled: ' + is_sca_enabled);
 
-			if (getPersona(additionalWorkflowArgs) === "devsecops") {
+			if (getPersona(ioClientArgs) === "devsecops") {
 				console.log("==================================== IO Risk Score =======================================")
 				let riskScore = state.Data.Prescription && state.Data.Prescription.RiskScore
 				console.log(`Business Criticality Score - ${riskScore.BusinessCriticalityScore}`)
@@ -169,8 +149,8 @@ function removeFiles(fileNames) {
 	}
 }
 
-function getPersona(additionalWorkflowArgs) {
-	let additionalWorkflowOptions = additionalWorkflowArgs.split(" ")
+function getPersona(ioClientArgs) {
+	let additionalWorkflowOptions = ioClientArgs.split(" ")
 	for (let value of additionalWorkflowOptions) {
 		let opt = value.split("=")
 		if (opt[0] === "Persona.Type") {
