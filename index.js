@@ -35,15 +35,15 @@ async function IO() {
 
 			removeFiles(["io_state.json"]);
 
-			if (!fs.existsSync("io_client-0.1.487")) {
+			if (!fs.existsSync("io_client-0.1.495")) {
 
-				shell.exec(`wget http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/io_client/0.1.487/io_client-0.1.487.zip`)
+				shell.exec(`wget http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/io_client/0.1.495/io_client-0.1.495.zip`)
 
 				const pipeline = promisify(stream.pipeline);
 
 				async function unzip() {
 					await pipeline(
-						fs.createReadStream('io_client-0.1.487.zip'),
+						fs.createReadStream('io_client-0.1.495.zip'),
 						unzipper.Extract({ path: './' })
 					);
 				}
@@ -51,7 +51,7 @@ async function IO() {
 				await unzip().catch(console.error);
 			}
 
-			let ioBinary = path.join("io_client-0.1.487", getOSType(), "bin", "io")
+			let ioBinary = path.join("io_client-0.1.495", getOSType(), "bin", "io")
 			shell.exec(`chmod +x ${ioBinary}`)
 
 			let rcode = shell.exec(`${ioBinary} --stage io Scm.Type=${scmType} Scm.Owner=${scmOwner} Scm.Repository.Name=${scmRepoName} Scm.Repository.Branch.Name=${scmBranchName} Github.Username=${githubUsername} ${ioClientArgs}`);
@@ -93,19 +93,19 @@ async function IO() {
 			removeFiles(["synopsys-io.yml", "synopsys-io.json"]);
 		} else if (stage.toUpperCase() === "WORKFLOW") {
 			console.log("Adding scan tool parameters")
-			let ioBinary = path.join("io_client-0.1.487", getOSType(), "bin", "io")
+			let ioBinary = path.join("io_client-0.1.495", getOSType(), "bin", "io")
 			if (!fs.existsSync("io_state.json")) {
 				core.error(`Error: Workflow stage cannot be run due to non-availability of prescription`);
 				core.setFailed();
 			}
 
-			if (!fs.existsSync("io_client-0.1.487")) {
-				shell.exec(`wget http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/io_client/0.1.487/io_client-0.1.487.zip`)
+			if (!fs.existsSync("io_client-0.1.495")) {
+				shell.exec(`wget http://artifactory.internal.synopsys.com/artifactory/clops-local/clops.sig.synopsys.com/io_client/0.1.495/io_client-0.1.495.zip`)
 				const pipeline = promisify(stream.pipeline);
 
 				async function unzip() {
 					await pipeline(
-						fs.createReadStream('io_client-0.1.487.zip'),
+						fs.createReadStream('io_client-0.1.495.zip'),
 						unzipper.Extract({ path: './' })
 					);
 				}
