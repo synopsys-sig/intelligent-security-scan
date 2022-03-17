@@ -3,8 +3,6 @@
 const core = require('@actions/core');
 const shell = require('shelljs');
 const fs = require('fs');
-const { promisify } = require('util');
-const exec = promisify(require('child_process').exec)
 
 try {
 	const ioServerUrl = core.getInput('ioServerUrl');
@@ -17,7 +15,7 @@ try {
 	var rcode = -1
 	const releaseType = core.getInput('releaseType')
 	const manifestType = core.getInput('manifestType')
-	
+
 	let scmType = "github"
 	let scmOwner = process.env.GITHUB_REPOSITORY.split('/')[0]
 	let scmRepoName = process.env.GITHUB_REPOSITORY.split('/')[1]
@@ -25,14 +23,13 @@ try {
 	let githubUsername = process.env.GITHUB_ACTOR
 	let asset_id = process.env.GITHUB_REPOSITORY
 
-	if( process.env.GITHUB_EVENT_NAME === "push" || process.env.GITHUB_EVENT_NAME === "workflow_dispatch"){
+	if (process.env.GITHUB_EVENT_NAME === "push" || process.env.GITHUB_EVENT_NAME === "workflow_dispatch") {
 		scmBranchName = process.env.GITHUB_REF.split('/')[2]
-	}
-	else if( process.env.GITHUB_EVENT_NAME === "pull_request") {
+	} else if (process.env.GITHUB_EVENT_NAME === "pull_request") {
 		scmBranchName = process.env.GITHUB_HEAD_REF
 	}
-	
-	if(ioServerToken === "" && ioServerUrl === "http://localhost:9090"){
+
+	if (ioServerToken === "" && ioServerUrl === "http://localhost:9090") {
 		//optionally can run ephemeral IO containers here
 		console.log("\nAuthenticating the Ephemeral IO Server");
 		shell.exec(`curl ${ioServerUrl}/api/onboarding/onboard-requests -H "Content-Type:application/vnd.synopsys.io.onboard-request-2+json" -d '{"user":{"username": "ephemeraluser", "password": "P@ssw0rd!", "name":"ephemeraluser", "email":"user@ephemeral.com"}}'`, { silent: true });
@@ -44,9 +41,9 @@ try {
 		removeFiles(["cookie.txt", "line.txt", "output.json"]);
 		console.log("\nEphemeral IO Server Authentication Completed");
 	}
-	
+
 	// Irrespective of Machine this should be invoked
-	if(stage.toUpperCase() === "IO") {
+	if (stage.toUpperCase() === "IO") {
 		console.log("Triggering prescription")
 
 		removeFiles(["prescription.sh"]);
@@ -54,26 +51,30 @@ try {
 		shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
 		shell.exec(`chmod +x prescription.sh`)
 		shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
-		
-		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token="${ioServerToken}" --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=false --IS_SCA_ENABLED=false --IS_DAST_ENABLED=false ${additionalWorkflowArgs}`).code;
-		
-		if (rcode != 0){
+		rcode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token="${ioServerToken}" --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
+		if (rcode != 0) {
 			core.error(`Error: Execution failed and returncode is ${rcode}`);
 			core.setFailed();
 		}
-		
+
 		let rawdata = fs.readFileSync('result.json');
 		let result_json = JSON.parse(rawdata);
-		let is_sast_enabled = ((result_json.security.activities.sast && result_json.security.activities.sast.enabled) || false);
-		let is_sca_enabled = ((result_json.security.activities.sca && result_json.security.activities.sca.enabled) || false);
-		let is_dast_enabled = ((result_json.security.activities.dast && result_json.security.activities.dast.enabled) || false);
-
+		let preDefinedActivities = { "sca": {}, "dast": {}, "threatmodel": {}, "network": {}, "cloud": {}, "infra": {}, "sast": {}, "dastplusm": {}, "imagescan": {}, "sastplusm": {} };
+		let activities = result_json.security.activities
 		console.log(`\n================================== IO Prescription =======================================`)
-		console.log('Is SAST Enabled: '+is_sast_enabled);
-		console.log('Is SCA Enabled: '+is_sca_enabled);
+		for (let val in activities) {
+			if (preDefinedActivities[val.toLowerCase()]) {
+				console.log(`Is ${activities[val].longName}(${val.toUpperCase()}) Enabled: ${activities[val].enabled}`);
+				rcode = shell.exec(`echo ::set-output name=${val.toLowerCase()}Scan::${activities[val].enabled}`).code;
+				if (rcode != 0) {
+					core.error(`Error: Execution failed and returncode is ${rcode}`);
+					core.setFailed();
+				}
+			}
+		}
 
 		if (getPersona(additionalWorkflowArgs) === "devsecops") {
-		    console.log("==================================== IO Risk Score =======================================")
+			console.log("==================================== IO Risk Score =======================================")
 			console.log(`Business Criticality Score - ${result_json.riskScoreCard.bizCriticalityScore}`)
 			console.log(`Data Class Score - ${result_json.riskScoreCard.dataClassScore}`)
 			console.log(`Access Score - ${result_json.riskScoreCard.accessScore}`)
@@ -87,29 +88,28 @@ try {
 			console.log(`Total Score - ${bizScore + dataScore + accessScore + vulnScore + changeScore}`)
 		}
 
-		shell.exec(`echo ::set-output name=sastScan::${is_sast_enabled}`)
-		shell.exec(`echo ::set-output name=scaScan::${is_sca_enabled}`)
-		shell.exec(`echo ::set-output name=dastScan::${is_dast_enabled}`)
 		removeFiles(["synopsys-io.yml", "synopsys-io.yml", "data.json"]);
-	}
-	else if (stage.toUpperCase() === "WORKFLOW")  {
+	} else if (stage.toUpperCase() === "WORKFLOW") {
 		console.log("Adding scan tool parameters")
 		// file doesn't exist
 		if (!fs.existsSync("prescription.sh")) {
-			shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
+			// shell.exec(`wget https://raw.githubusercontent.com/synopsys-sig/io-artifacts/${workflowVersion}/prescription.sh`)
 			shell.exec(`chmod +x prescription.sh`)
 			shell.exec(`sed -i -e 's/\r$//' prescription.sh`)
 		}
-		var wffilecode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token="${ioServerToken}" --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --workflow.url=${workflowServerUrl} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} --IS_SAST_ENABLED=false --IS_SCA_ENABLED=false --IS_DAST_ENABLED=false ${additionalWorkflowArgs}`).code;
+
+		var wffilecode = shell.exec(`./prescription.sh --io.url=${ioServerUrl} --io.token="${ioServerToken}" --io.manifest.url=${ioManifestUrl} --manifest.type=${manifestType} --stage=${stage} --release.type=${releaseType} --workflow.version=${workflowVersion} --workflow.url=${workflowServerUrl} --asset.id=${asset_id} --scm.type=${scmType} --scm.owner=${scmOwner} --scm.repo.name=${scmRepoName} --scm.branch.name=${scmBranchName} --github.username=${githubUsername} ${additionalWorkflowArgs}`).code;
+
 		let configFile = ""
+
 		if (wffilecode == 0) {
 			console.log("Workflow file generated successfullly....Calling WorkFlow Engine")
-			if(manifestType === "yml"){
+			if (manifestType === "yml") {
 				configFile = "synopsys-io.yml"
-			}
-			else if(manifestType === "json"){
+			} else if (manifestType === "json") {
 				configFile = "synopsys-io.json"
 			}
+
 			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --io.manifest.path="${configFile}"`).code;
 			if (wfclientcode != 0) {
 				core.error(`Error: Workflow failed and returncode is ${wfclientcode}`);
@@ -120,20 +120,17 @@ try {
 			let wf_output_json = JSON.parse(rawdata);
 			console.log("========================== IO WorkflowEngine Summary ============================")
 			console.log(`Breaker Status - ${wf_output_json.breaker.status}`)
-		}
-		else {
+		} else {
 			core.error(`Error: Workflow file generation failed and returncode is ${wffilecode}`);
 			core.setFailed();
 		}
+
 		removeFiles([configFile]);
-	}
-	else {
+	} else {
 		core.error(`Error: Invalid stage given as input`);
 		core.setFailed();
 	}
-}
-
-catch (error) {
+} catch (error) {
 	core.setFailed(error.message);
 }
 
