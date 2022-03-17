@@ -59,13 +59,13 @@ try {
 
 		let rawdata = fs.readFileSync('result.json');
 		let result_json = JSON.parse(rawdata);
-		let preDefinedActivities = { "sca": {}, "dast": {}, "threatmodel": {}, "network": {}, "cloud": {}, "infra": {}, "sast": {}, "dastplusm": {}, "imagescan": {}, "sastplusm": {} };
+		let preDefinedActivities = { "sca": "scaScan", "dast": "dastScan", "threatmodel": "threatmodelScan", "network": "networkScan", "cloud": "cloudScan", "infra": "infraScan", "sast": "sastScan", "dastplusm": "dastplusmScan", "imagescan": "imageScan", "sastplusm": "sastplusmScan" };
 		let activities = result_json.security.activities
 		console.log(`\n================================== IO Prescription =======================================`)
 		for (let val in activities) {
 			if (preDefinedActivities[val.toLowerCase()]) {
 				console.log(`Is ${activities[val].longName}(${val.toUpperCase()}) Enabled: ${activities[val].enabled}`);
-				rcode = shell.exec(`echo ::set-output name=${val.toLowerCase()}Scan::${activities[val].enabled}`).code;
+				rcode = shell.exec(`echo ::set-output name=${preDefinedActivities[val.toLowerCase()]}::${activities[val].enabled}`).code;
 				if (rcode != 0) {
 					core.error(`Error: Execution failed and returncode is ${rcode}`);
 					core.setFailed();
