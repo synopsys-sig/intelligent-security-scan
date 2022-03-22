@@ -25,7 +25,11 @@ inputs:
   workflowVersion:
     description: 'The workflow jar version to retrieve for Intelligent Scan Engine'
     required: false
-    default: 2021.12.4
+    default: 2022.4.0
+  runId:
+    description: 'The run ID from IO stage job'
+    required: false
+    default: ''
   additionalWorkflowArgs:
     description: 'Additional arguments required for workflow engine arguments'
     required: true
