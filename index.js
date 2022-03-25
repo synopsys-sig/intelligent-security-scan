@@ -6,7 +6,8 @@ const fs = require('fs');
 
 try {
 	const ioServerUrl = core.getInput('ioServerUrl');
-	var ioServerToken = core.getInput('ioServerToken');
+	const ioServerToken = core.getInput('ioServerToken');
+	const runId = core.getInput('runId');
 	const workflowServerUrl = core.getInput('workflowServerUrl');
 	const workflowVersion = core.getInput('workflowVersion');
 	const ioManifestUrl = core.getInput('ioManifestUrl');
@@ -73,6 +74,12 @@ try {
 			}
 		}
 
+		rcode = shell.exec(`echo ::set-output name=runId::${result_json.runId}`).code;
+		if (rcode != 0) {
+			core.error(`Error: Execution failed and returncode is ${rcode}`);
+			core.setFailed();
+		}
+
 		if (getPersona(additionalWorkflowArgs) === "devsecops") {
 			console.log("==================================== IO Risk Score =======================================")
 			console.log(`Business Criticality Score - ${result_json.riskScoreCard.bizCriticalityScore}`)
@@ -110,7 +117,7 @@ try {
 				configFile = "synopsys-io.json"
 			}
 
-			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --workflowengine.url="${workflowServerUrl}" --io.manifest.path="${configFile}"`).code;
+			var wfclientcode = shell.exec(`java -jar WorkflowClient.jar --ioiq.url=${ioServerUrl} --ioiq.token="${ioServerToken}" --run.id="${runId}" --workflowengine.url="${workflowServerUrl}" --io.manifest.path="${configFile}"`).code;
 			if (wfclientcode != 0) {
 				core.error(`Error: Workflow failed and returncode is ${wfclientcode}`);
 				core.setFailed();
