@@ -123,10 +123,12 @@ try {
 				core.setFailed();
 			}
 
-			let rawdata = fs.readFileSync('wf-output.json');
-			let wf_output_json = JSON.parse(rawdata);
-			console.log("========================== IO WorkflowEngine Summary ============================")
-			console.log(`Breaker Status - ${wf_output_json.breaker.status}`)
+			try {
+				let rawdata = fs.readFileSync('wf-output.json');
+				let wf_output_json = JSON.parse(rawdata);
+				console.log("========================== IO WorkflowEngine Summary ============================")
+				console.log(`Breaker Status - ${wf_output_json.breaker.status}`)
+			} catch {}
 		} else {
 			core.error(`Error: Workflow file generation failed and returncode is ${wffilecode}`);
 			core.setFailed();
