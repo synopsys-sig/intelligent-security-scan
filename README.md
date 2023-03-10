@@ -51,7 +51,7 @@ jobs:
 
     - name: Synopsys Intelligent Security Scan
       id: prescription
-      uses: synopsys-sig/intelligent-security-scan@2023.3.0-alpha
+      uses: synopsys-sig/intelligent-security-scan@2023.3.0
       with:
         ioServerUrl: "${{secrets.IO_SERVER_URL}}"
         ioServerToken: "${{secrets.IO_SERVER_TOKEN}}"
@@ -75,13 +75,19 @@ jobs:
     # Please note that the ID in previous step was set to prescription
     # in order for this logic to work
     - name: Software Composition Analysis with Black Duck
-      if: ${{steps.prescription.outputs.scaScan == 'true'}}
-      uses: blackducksoftware/github-action@v2
+      if: ${{steps.prescription.outputs.scaScan == 'true' }}
+      uses: synopsys-sig/detect-action@v0.3.4
+      env:
+        SPRING_APPLICATION_JSON: '{"detect.project.name":"{{blackduck_project_name}}","detect.project.version":"{{blackduck_project_version}}","detect.tools":"DETECTOR","blackduck.trust.cert":"true"}'
       with:
-        args: '--blackduck.url="${{secrets.BLACKDUCK_URL}}" --blackduck.api.token="${{secrets.BLACKDUCK_API_TOKEN}}" --detect.tools="DETECTOR"'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          detect-version: 7.9.0
+          blackduck-url: ${{ secrets.BLACKDUCK_SERVER_URL}}
+          blackduck-api-token: ${{ secrets.BLACKDUCK_TOKEN}}
+          scan-mode: INTELLIGENT
 
     - name: Synopsys Intelligent Security Scan
-      uses: synopsys-sig/intelligent-security-scan@2023.3.0-alpha
+      uses: synopsys-sig/intelligent-security-scan@2023.3.0
       with:
         ioServerUrl: "${{secrets.IO_SERVER_URL}}"
         ioServerToken: "${{secrets.IO_SERVER_TOKEN}}"
