@@ -25,7 +25,7 @@ inputs:
   workflowVersion:
     description: 'The workflow jar version to retrieve for Intelligent Scan Engine'
     required: false
-    default: 2023.3.0
+    default: 2023.3.1
   runId:
     description: 'The run ID from IO stage job'
     required: false
